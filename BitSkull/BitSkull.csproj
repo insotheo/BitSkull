@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+	<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	<OutDir>..\Bin\Engine\Lib\</OutDir>
+	<AppendTargetFrameworkToOutDir>False</AppendTargetFrameworkToOutDir>
+	  
+	<Company>Insotheo</Company>
+	<AssemblyVersion>0.0.0.1</AssemblyVersion>
+	<FileVersion>0.0.0.1</FileVersion>
+  </PropertyGroup>
+	
+</Project>
