@@ -11,9 +11,11 @@ namespace Sandbox
             Log.Pattern = "[%T]: %E";
             try
             {
-                Application sandboxApp = new Application("Sandbox");
-                //Application newApp = new("ABC"); //ERROR
-                sandboxApp.Run();
+                using (Application sandboxApp = new Application("Sandbox"))
+                {
+                    //Application newApp = new("ABC"); //ERROR
+                    sandboxApp.Run();
+                }
             }
             catch(Exception ex)
             {
