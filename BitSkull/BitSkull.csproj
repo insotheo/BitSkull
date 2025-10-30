@@ -1,14 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-	<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-	<OutDir>..\Bin\Engine\Lib\</OutDir>
-	<AppendTargetFrameworkToOutDir>False</AppendTargetFrameworkToOutDir>
-	  
-	<Company>Insotheo</Company>
-	<AssemblyVersion>0.0.0.1</AssemblyVersion>
-	<FileVersion>0.0.0.1</FileVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+      <TargetFramework>net8.0</TargetFramework>
+	  <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	  <OutDir>..\Bin\Engine\Lib\</OutDir>
+	  <AppendTargetFrameworkToOutDir>False</AppendTargetFrameworkToOutDir>
+	  <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	    
+	  <Company>Insotheo</Company>
+	  <AssemblyVersion>0.0.0.1</AssemblyVersion>
+	  <FileVersion>0.0.0.1</FileVersion>
+	    
+	    <!--Params-->
+	    <PlatformBackend>SILK_NET</PlatformBackend>
+	    
+	    <!--End of params-->
+    </PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="Core\**\*.cs"/>
+		<Compile Include="Events\**\*.cs" />
+		<Compile Include="Log.cs"/>
+	</ItemGroup>
+	
+	
+    <!--SILK NET-->
+	<ItemGroup Condition="'$(PlatformBackend)'=='SILK_NET'">
+		<Compile Include="Platform\SilkNet\**\*.cs"/>
+		
+		<PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(PlatformBackend)'=='SILK_NET'">
+		<DefineConstants>SILK_NET_PLATFORM</DefineConstants>
+	</PropertyGroup>
+	<!--End of SILK NET-->
 	
 </Project>

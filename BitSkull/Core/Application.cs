@@ -8,6 +8,7 @@ namespace BitSkull.Core
         private static Application _inst;
         private readonly string _name;
         private readonly LayerStack _layerStack;
+        private BaseWindow _window;
 
         public bool IsRunning { get; private set; } = false;
 
@@ -26,6 +27,8 @@ namespace BitSkull.Core
         public void Run()
         {
             IsRunning = true;
+            if (_window != null)
+                _window.Run();
             while (IsRunning)
             {
                 foreach (Layer layer in _layerStack)
@@ -39,6 +42,7 @@ namespace BitSkull.Core
             Stop();
             _layerStack.Clear();
 
+            _inst = null;
             GC.SuppressFinalize(this);
         }
 
@@ -62,6 +66,18 @@ namespace BitSkull.Core
                 if (e.Handled)
                     break;
             }
+        }
+
+        public void CreateWindow(int width, int heigth, string title = "", bool vsync = true)
+        {
+#if SILK_NET_PLATFORM
+            if (String.IsNullOrEmpty(title))
+                title = _name;
+
+            _window = new Platform.SilkNet.SilkWindow(width, heigth, title, vsync);
+#else
+            throw new Exception("Platform exception: window not found");
+#endif
         }
         #endregion
     }
