@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace BitSkull.Core
 {
-    public sealed class LayerStack : IEnumerable<Layer>
+    internal sealed class LayerStack : IEnumerable<Layer>
     {
         private readonly List<Layer> _layers;
         private int _layerInsertIdx = 0;
@@ -15,20 +15,20 @@ namespace BitSkull.Core
             _layers = new List<Layer>();
         }
 
-        public void PushLayer(Layer layer)
+        internal void PushLayer(Layer layer)
         {
             _layers.Insert(_layerInsertIdx, layer);
             _layerInsertIdx += 1;
             layer.OnAttach();
         }
 
-        public void PushOverlay(Layer overlay)
+        internal void PushOverlay(Layer overlay)
         {
             _layers.Add(overlay);
             overlay.OnAttach();
         }
 
-        public void PopLayer(Layer layer)
+        internal void PopLayer(Layer layer)
         {
             if (!_layers.Contains(layer)) return;
 
@@ -37,7 +37,7 @@ namespace BitSkull.Core
             layer.OnDetach();
         }
 
-        public void PopOverlay(Layer overlay)
+        internal void PopOverlay(Layer overlay)
         {
             if (!_layers.Contains(overlay)) return;
 
@@ -46,7 +46,7 @@ namespace BitSkull.Core
         }
 
 
-        public bool HasLayer(string name)
+        internal bool HasLayer(string name)
         {
             foreach (Layer layer in _layers)
             {
@@ -56,7 +56,7 @@ namespace BitSkull.Core
             return false;
         }
 
-        public Layer GetLayer(string name)
+        internal Layer GetLayer(string name)
         {
             foreach (Layer layer in _layers)
             {
@@ -64,6 +64,12 @@ namespace BitSkull.Core
                     return layer;
             }
             return null;
+        }
+
+        internal Layer At(int i)
+        {
+            if(i > _layers.Count || i < 0) return null;
+            return _layers[i];
         }
 
         internal void Clear()

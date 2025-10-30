@@ -1,4 +1,6 @@
-﻿namespace BitSkull.Core
+﻿using BitSkull.Events;
+
+namespace BitSkull.Core
 {
     public class Layer
     {
@@ -13,6 +15,6 @@
         public virtual void OnDetach() { }
         public virtual void OnUpdate(float dt) { }
         public virtual void OnRender() { }
-        public virtual void OnEvent(/*Event event*/) { }
+        public virtual void OnEvent(Event ev) { }
     }
 }

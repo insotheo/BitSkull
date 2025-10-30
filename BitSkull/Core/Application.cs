@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BitSkull.Events;
+using System;
 
 namespace BitSkull.Core
 {
@@ -40,5 +41,28 @@ namespace BitSkull.Core
 
             GC.SuppressFinalize(this);
         }
+
+
+        #region User interaction
+        public void PushLayer(Layer layer) => _layerStack.PushLayer(layer);
+        public void PushOverlay(Layer overlay) => _layerStack.PushOverlay(overlay);
+
+        public void OnEvent(Event e)
+        {
+            EventDispatcher dispatcher = new EventDispatcher(e);
+            dispatcher.Dispatch<AppCloseEvent>((AppCloseEvent _) =>
+            { //On App close
+                IsRunning = false;
+                return true;
+            });
+
+            for (int i = _layerStack.Count - 1; i >= 0; --i)
+            {
+                _layerStack.At(i).OnEvent(e);
+                if (e.Handled)
+                    break;
+            }
+        }
+        #endregion
     }
 }
