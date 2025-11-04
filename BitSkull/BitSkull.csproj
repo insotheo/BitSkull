@@ -12,28 +12,27 @@
 	  <FileVersion>0.0.0.1</FileVersion>
 	    
 	    <!--Params-->
-	    <PlatformBackend>SILK_NET</PlatformBackend>
+	    <PlatformBackend>DEFAULT_PLATFORM</PlatformBackend>
 	    
 	    <!--End of params-->
     </PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="Core\**\*.cs"/>
+		<Compile Include="Core\**\*.cs" />
 		<Compile Include="Events\**\*.cs" />
-		<Compile Include="Log.cs"/>
+		<Compile Include="Log.cs" />
+		<Compile Include="Platform\GLFW\GLFWWindow.cs" />
 	</ItemGroup>
 	
 	
-    <!--SILK NET-->
-	<ItemGroup Condition="'$(PlatformBackend)'=='SILK_NET'">
-		<Compile Include="Platform\SilkNet\**\*.cs"/>
-		
-		<PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
+    <!--DEFAULT_PLATFORM-->
+	<ItemGroup Condition="'$(PlatformBackend)'=='DEFAULT_PLATFORM'">
+	  <PackageReference Include="Silk.NET.GLFW" Version="2.22.0" />
 	</ItemGroup>
 
-	<PropertyGroup Condition="'$(PlatformBackend)'=='SILK_NET'">
-		<DefineConstants>SILK_NET_PLATFORM</DefineConstants>
+	<PropertyGroup Condition="'$(PlatformBackend)'=='DEFAULT_PLATFORM'">
+		<DefineConstants>DEFAULT_PLATFORM</DefineConstants>
 	</PropertyGroup>
-	<!--End of SILK NET-->
+	<!--End of DEFAULT_PLATFORM-->
 	
 </Project>

@@ -1,5 +1,6 @@
 ﻿using BitSkull.Events;
 using System;
+using System.Diagnostics;
 
 namespace BitSkull.Core
 {
@@ -29,10 +30,31 @@ namespace BitSkull.Core
             IsRunning = true;
             if (_window != null)
                 _window.Run();
+
+            Stopwatch dtStopwatch = new Stopwatch();//dt is delta time
+            dtStopwatch.Start();
+            double prevTime = dtStopwatch.Elapsed.TotalSeconds, currTime = 0.0;
+            float dt = 0.0f;
+
             while (IsRunning)
             {
+                currTime = dtStopwatch.Elapsed.TotalSeconds;
+                dt = (float)(currTime - prevTime);
+                prevTime = currTime;
+
+                //update
+                if(_window != null)
+                    _window.DoUpdate(dt);
                 foreach (Layer layer in _layerStack)
-                    layer.OnUpdate(1f);
+                    layer.OnUpdate(dt);
+            }
+
+            dtStopwatch.Stop();
+
+            if(_window != null)
+            {
+                _window.Dispose();
+                _window = null;
             }
         }
         public void Stop() => IsRunning = false;
@@ -70,11 +92,10 @@ namespace BitSkull.Core
 
         public void CreateWindow(int width, int heigth, string title = "", bool vsync = true)
         {
-#if SILK_NET_PLATFORM
             if (String.IsNullOrEmpty(title))
                 title = _name;
-
-            _window = new Platform.SilkNet.SilkWindow(width, heigth, title, vsync);
+#if DEFAULT_PLATFORM
+            _window = new Platform.GLFW.GLFWWindow(width, heigth, title, vsync);
 #else
             throw new Exception("Platform exception: window not found");
 #endif

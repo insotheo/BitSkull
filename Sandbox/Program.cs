@@ -13,7 +13,7 @@ namespace Sandbox
             {
                 using (Application sandboxApp = new Application("Sandbox"))
                 {
-                    sandboxApp.CreateWindow(800, 600);
+                    sandboxApp.CreateWindow(800, 550);
                     sandboxApp.Run();
                 }
             }
