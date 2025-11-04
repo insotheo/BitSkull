@@ -16,6 +16,7 @@ namespace Sandbox
                 using (Application sandboxApp = new Application("Sandbox"))
                 {
                     sandboxApp.CreateWindow(800, 550);
+                    sandboxApp.PushLayer(new TestLayer());
                     sandboxApp.Run();
                 }
             }

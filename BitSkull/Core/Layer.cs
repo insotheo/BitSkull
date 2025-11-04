@@ -6,7 +6,7 @@ namespace BitSkull.Core
     {
         public string Name { get; }
         
-        public Layer(string name)
+        public Layer(string name = "")
         {
             Name = name;
         }
@@ -15,6 +15,6 @@ namespace BitSkull.Core
         public virtual void OnDetach() { }
         public virtual void OnUpdate(float dt) { }
         public virtual void OnRender() { }
-        public virtual void OnEvent(Event ev) { }
+        public virtual void OnEvent(Event e) { }
     }
 }

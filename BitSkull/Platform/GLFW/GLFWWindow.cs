@@ -37,7 +37,6 @@ namespace BitSkull.Platform.GLFW
 
 
             ////////////////////////////////////////////////////////////////////////Events
-
             _glfw.SetWindowCloseCallback(_glfwWindow, (WindowHandle* wnd) =>
             {
                 Application.GetAppInstance().OnEvent(new AppCloseEvent());
@@ -85,6 +84,23 @@ namespace BitSkull.Platform.GLFW
             _glfw.SetScrollCallback(_glfwWindow, (WindowHandle* wnd, double x, double y) =>
             {
                 Application.GetAppInstance().OnEvent(new MouseScrollEvent((float)x, (float)y));
+            });
+
+            //Window state
+            _glfw.SetWindowPosCallback(_glfwWindow, (WindowHandle* wnd, int x, int y) =>
+            {
+                Application.GetAppInstance().OnEvent(new WindowMoveEvent(x, y));
+            });
+            _glfw.SetWindowSizeCallback(_glfwWindow, (WindowHandle* wnd, int x, int y) =>
+            {
+                Width = x;
+                Height = y;
+                Application.GetAppInstance().OnEvent(new WindowResizeEvent(Width, Height));
+            });
+            _glfw.SetWindowFocusCallback(_glfwWindow, (WindowHandle* wnd, bool focus) =>
+            {
+                IsFocused = focus;
+                Application.GetAppInstance().OnEvent(new WindowFocusEvent(focus));
             });
             ////////////////////////////////////////////////////////////////////////
         }

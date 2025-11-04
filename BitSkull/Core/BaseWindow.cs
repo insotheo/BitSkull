@@ -7,6 +7,7 @@ namespace BitSkull.Core
         public string Title { get; protected set; }
         public int Width { get; protected set; }
         public int Height { get; protected set; }
+        public bool IsFocused { get; protected set; }
         public bool VSync { get; protected set; }
 
 
