@@ -1,4 +1,6 @@
-﻿namespace BitSkull.Events
+﻿using BitSkull.InputSystem;
+
+namespace BitSkull.Events
 {
     public abstract class MouseEvent : Event
     {
@@ -36,9 +38,9 @@
 
     public sealed class MouseButtonPressed : MouseEvent
     {
-        public int Button { get; }
+        public MouseButton Button { get; }
 
-        public MouseButtonPressed(int button)
+        public MouseButtonPressed(MouseButton button)
         {
             Button = button;
         }
@@ -48,9 +50,9 @@
 
     public sealed class MouseButtonReleased : MouseEvent
     {
-        public int Button { get; }
+        public MouseButton Button { get; }
 
-        public MouseButtonReleased(int button)
+        public MouseButtonReleased(MouseButton button)
         {
             Button = button;
         }

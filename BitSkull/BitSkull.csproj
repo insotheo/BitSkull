@@ -20,13 +20,18 @@
 	<ItemGroup>
 		<Compile Include="Core\**\*.cs" />
 		<Compile Include="Events\**\*.cs" />
+		<Compile Include="InputSystem\**\*.cs" />
+		<Compile Include="Numerics\**\*.cs" />
 		<Compile Include="Log.cs" />
-		<Compile Include="Platform\GLFW\GLFWWindow.cs" />
+		
+		<PackageReference Include="Silk.NET.Input" Version="2.22.0" />
 	</ItemGroup>
 	
 	
     <!--DEFAULT_PLATFORM-->
 	<ItemGroup Condition="'$(PlatformBackend)'=='DEFAULT_PLATFORM'">
+	  <Compile Include="Platform\GLFW\GLFWWindow.cs" />
+		
 	  <PackageReference Include="Silk.NET.GLFW" Version="2.22.0" />
 	</ItemGroup>
 

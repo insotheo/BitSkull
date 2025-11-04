@@ -1,6 +1,8 @@
 ﻿using BitSkull.Core;
 using BitSkull.Events;
+using BitSkull.InputSystem;
 using Silk.NET.GLFW;
+using Silk.NET.Input;
 using System;
 
 namespace BitSkull.Platform.GLFW
@@ -34,11 +36,57 @@ namespace BitSkull.Platform.GLFW
             SetVSync(vsync);
 
 
-            //Events
-            _glfw.SetWindowCloseCallback(_glfwWindow, (WindowHandle* _wnd) =>
+            ////////////////////////////////////////////////////////////////////////Events
+
+            _glfw.SetWindowCloseCallback(_glfwWindow, (WindowHandle* wnd) =>
             {
                 Application.GetAppInstance().OnEvent(new AppCloseEvent());
             });
+
+            //Input
+            _glfw.SetKeyCallback(_glfwWindow, (WindowHandle* wnd, Keys key, int scancode, InputAction action, KeyModifiers mods) =>
+            {
+                switch (action)
+                {
+                    case InputAction.Press:
+                        Application.GetAppInstance().OnEvent(new KeyPressedEvent((KeyCode)(Key)key));
+                        break;
+
+                    case InputAction.Release:
+                        Application.GetAppInstance().OnEvent(new KeyReleasedEvent((KeyCode)(Key)key));
+                        break;
+
+                    default: break;
+                }
+            });
+            _glfw.SetCharCallback(_glfwWindow, (WindowHandle* wnd, uint codepoint) =>
+            {
+                Application.GetAppInstance().OnEvent(new KeyTypedEvent((char)codepoint));
+            });
+            _glfw.SetMouseButtonCallback(_glfwWindow, (WindowHandle* wnd, Silk.NET.GLFW.MouseButton btn, InputAction action, KeyModifiers mods) =>
+            {
+                switch (action)
+                {
+                    case InputAction.Press:
+                        Application.GetAppInstance().OnEvent(new MouseButtonPressed((InputSystem.MouseButton)(Silk.NET.Input.MouseButton)btn));
+                        break;
+
+                    case InputAction.Release:
+                        Application.GetAppInstance().OnEvent(new MouseButtonReleased((InputSystem.MouseButton)(Silk.NET.Input.MouseButton)btn));
+                        break;
+
+                    default: break;
+                }
+            });
+            _glfw.SetCursorPosCallback(_glfwWindow, (WindowHandle* wnd, double x, double y) =>
+            {
+                Application.GetAppInstance().OnEvent(new MouseMovedEvent((float)x, (float)y));
+            });
+            _glfw.SetScrollCallback(_glfwWindow, (WindowHandle* wnd, double x, double y) =>
+            {
+                Application.GetAppInstance().OnEvent(new MouseScrollEvent((float)x, (float)y));
+            });
+            ////////////////////////////////////////////////////////////////////////
         }
 
         internal override void Run() => _glfw.ShowWindow(_glfwWindow);
@@ -53,7 +101,6 @@ namespace BitSkull.Platform.GLFW
         {
             _glfw.PollEvents();
             _glfw.SwapBuffers(_glfwWindow);
-            //Input update for sure
         }
 
         public override void Dispose()

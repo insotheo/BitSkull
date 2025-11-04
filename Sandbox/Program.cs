@@ -8,6 +8,8 @@ namespace Sandbox
     {
         static void Main()
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
             Log.Pattern = "[%T]: %E";
             try
             {

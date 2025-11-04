@@ -1,4 +1,6 @@
-﻿namespace BitSkull.Events
+﻿using BitSkull.InputSystem;
+
+namespace BitSkull.Events
 {
     public abstract class KeyboardEvent : Event
     {
@@ -8,10 +10,10 @@
 
     public sealed class KeyPressedEvent : KeyboardEvent
     {
-        public int KeyCode { get; }
+        public KeyCode KeyCode { get; }
         public bool IsRepeat { get; }
 
-        public KeyPressedEvent(int key, bool isRepeat = false)
+        public KeyPressedEvent(KeyCode key, bool isRepeat = false)
         {
             KeyCode = key;
             IsRepeat = isRepeat;
@@ -22,9 +24,9 @@
 
     public sealed class KeyReleasedEvent : KeyboardEvent
     {
-        public int KeyCode { get; }
+        public KeyCode KeyCode { get; }
 
-        public KeyReleasedEvent(int key)
+        public KeyReleasedEvent(KeyCode key)
         {
             KeyCode = key;
         }

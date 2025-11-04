@@ -1,4 +1,6 @@
 ﻿using BitSkull.Events;
+using BitSkull.InputSystem;
+using BitSkull.Numerics;
 using System;
 using System.Diagnostics;
 
@@ -47,6 +49,7 @@ namespace BitSkull.Core
                     _window.DoUpdate(dt);
                 foreach (Layer layer in _layerStack)
                     layer.OnUpdate(dt);
+                Input.Update();
             }
 
             dtStopwatch.Stop();
@@ -79,6 +82,47 @@ namespace BitSkull.Core
             dispatcher.Dispatch<AppCloseEvent>((AppCloseEvent _) =>
             { //On App close
                 IsRunning = false;
+                return true;
+            });
+            dispatcher.Dispatch<KeyboardEvent>((KeyboardEvent keyboardEvent) =>
+            {
+                switch (keyboardEvent)
+                {
+                    case KeyPressedEvent pressedEvent:
+                        Input.OnKeyDown(pressedEvent.KeyCode);
+                        break;
+
+                    case KeyReleasedEvent releasedEvent:
+                        Input.OnKeyUp(releasedEvent.KeyCode);
+                        break;
+
+                    case KeyTypedEvent typedEvent: //push it to the next layer
+                    default: return false;
+                }
+                return true; //captured by Input class
+            });
+            dispatcher.Dispatch<MouseEvent>((MouseEvent mouseEvent) =>
+            {
+                switch (mouseEvent)
+                {
+                    case MouseButtonPressed pressedEvent:
+                        Input.OnMouseDown(pressedEvent.Button);
+                        break;
+
+                    case MouseButtonReleased releasedEvent:
+                        Input.OnMouseUp(releasedEvent.Button);
+                        break;
+
+                    case MouseMovedEvent movedEvent:
+                        Input.OnMouseMove(new Vec2D(movedEvent.X, movedEvent.Y));
+                        break;
+
+                    case MouseScrollEvent scrollEvent:
+                        Input.OnMouseScroll(new Vec2D(scrollEvent.XOffset, scrollEvent.YOffset));
+                        break;
+
+                    default: return false;
+                }
                 return true;
             });
 
