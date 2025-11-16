@@ -28,9 +28,26 @@ namespace BitSkull.Core
 
         public static Application GetAppInstance() => _inst;
 
-
+        //DBG
+        VertexBuffer vertexBuffer;
+        IndexBuffer indexBuffer;
+        //
         public void Run()
         {
+            //DBG
+            vertexBuffer = Renderer.GenVertexBuffer(new float[]
+            {
+                //x      y        z
+                0.0f,   0.5f,    0.0f,
+                -0.5f,  -0.5f,    0.0f,
+                0.5f,  -0.5f,    0.0f,
+            });
+            indexBuffer = Renderer.GenIndexBuffer(new uint[]
+            {
+                0, 1, 2,
+            });
+            //
+
             IsRunning = true;
             if (_window != null)
                 _window.Run();
@@ -54,17 +71,22 @@ namespace BitSkull.Core
                 Input.Update();
 
                 //rendering
-                Renderer.Clear(1, 0, 0, 1);
+                Renderer.Clear(0.3f, 0.48f, 0.7f, 1);
             }
 
             dtStopwatch.Stop();
+
+            //DBG
+            vertexBuffer.Dispose();
+            indexBuffer.Dispose();
+            //
 
             if(_window != null)
             {
                 _window.Dispose();
                 _window = null;
             }
-            Renderer.Dispose();
+            Renderer.Dispose(); 
         }
         public void Stop() => IsRunning = false;
 

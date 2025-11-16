@@ -1,5 +1,4 @@
-﻿using BitSkull;
-using BitSkull.Core;
+﻿using BitSkull.Core;
 using BitSkull.Events;
 
 namespace Sandbox
@@ -10,10 +9,6 @@ namespace Sandbox
 
         public override void OnEvent(Event e)
         {
-            if(e is WindowResizeEvent resizeEvent)
-            {
-                Log.Info($"{resizeEvent.Width} x {resizeEvent.Height}");
-            }
         }
 
         public override void OnUpdate(float dt)
