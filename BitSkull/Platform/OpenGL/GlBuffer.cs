@@ -6,6 +6,7 @@ namespace BitSkull.Platform.OpenGL
     internal sealed unsafe class OpenGLVertexBuffer : VertexBuffer
     {
         private uint _data;
+        private BufferLayout _layout;
 
         public OpenGLVertexBuffer(float[] vertices)
         {
@@ -17,6 +18,9 @@ namespace BitSkull.Platform.OpenGL
                 gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertices.Length * sizeof(float)), v, BufferUsageARB.StaticDraw);
             Unbind();
         }
+
+        public override void SetLayout(BufferLayout layot) => _layout = layot;
+        public override BufferLayout GetLayot() => _layout;
 
         public override void Bind() => (Renderer.Context as GlRendererContext).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, _data);
         public override void Unbind() => (Renderer.Context as GlRendererContext).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);

@@ -18,6 +18,8 @@ namespace BitSkull.Graphics
 
         public virtual void Bind() {}
         public virtual void Unbind() { }
+        public virtual void SetLayout(BufferLayout layot) { }
+        public virtual BufferLayout GetLayot() { return null; }
         public virtual void Dispose() { }
     }
 }
