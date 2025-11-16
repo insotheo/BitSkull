@@ -31,21 +31,64 @@ namespace BitSkull.Core
         //DBG
         VertexBuffer vertexBuffer;
         IndexBuffer indexBuffer;
+        uint vao;
+        Shader shader;
         //
         public void Run()
         {
             //DBG
             vertexBuffer = Renderer.GenVertexBuffer(new float[]
             {
-                //x      y        z
-                0.0f,   0.5f,    0.0f,
-                -0.5f,  -0.5f,    0.0f,
-                0.5f,  -0.5f,    0.0f,
+                //a_Pos  x      y        z          a_Color   r      g     b
+                        0.0f,   0.5f,    0.0f,               1.0f,  0.0f,  0.0f,
+                        -0.5f,  -0.5f,    0.0f,              0.0f,  1.0f,  0.0f,
+                        0.5f,  -0.5f,    0.0f,               0.0f,  0.0f,  1.0f,
             });
+            vertexBuffer.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float3), new BufferElement("a_Color", ShaderDataType.Float3)));
+            vertexBuffer.Unbind();
+
             indexBuffer = Renderer.GenIndexBuffer(new uint[]
             {
                 0, 1, 2,
             });
+
+            vao = (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.GenVertexArray();
+            (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.BindVertexArray(vao);
+            vertexBuffer.Bind();
+            indexBuffer.Bind();
+            vertexBuffer.BindLayout();
+            (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.BindVertexArray(0);
+            vertexBuffer.Unbind();
+            indexBuffer.Unbind();
+
+            shader = Renderer.GenShader("""
+                #version 330 core
+
+                layout(location = 0) in vec3 a_Pos;
+                layout(location = 1) in vec3 a_Color;
+
+                out vec4 vert_Color;
+
+                void main(){
+                    vert_Color = vec4(a_Color, 1.0);
+                    gl_Position = vec4(1.5 * a_Pos, 1.0);
+                }
+                """,
+                """
+                #version 330 core
+
+                layout(location = 0) out vec4 color;
+
+                in vec4 vert_Color;
+
+                void main(){
+                    color = vert_Color;
+                }
+                """);
+
+            Log.Info("Hello, Triangle!");
+
+            float time = 0;
             //
 
             IsRunning = true;
@@ -71,7 +114,24 @@ namespace BitSkull.Core
                 Input.Update();
 
                 //rendering
-                Renderer.Clear(0.3f, 0.48f, 0.7f, 1);
+                //DBG
+                time += dt;
+
+                float r = (MathF.Sin(time * 0.8f) + 1f) * 0.5f;
+                float g = (MathF.Sin(time * 1.5f + 2f) + 1f) * 0.5f;
+                float b = (MathF.Sin(time * 1.1f + 4f) + 1f) * 0.5f;
+
+                Renderer.Clear(r, g, b, 1);
+
+                (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.BindVertexArray(vao);
+                shader.Use();
+                unsafe
+                {
+                    (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.DrawElements(Silk.NET.OpenGL.PrimitiveType.Triangles, indexBuffer.GetCount(), Silk.NET.OpenGL.DrawElementsType.UnsignedInt, null);
+                }
+                shader.ZeroUse();
+                (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.BindVertexArray(0);
+                //
             }
 
             dtStopwatch.Stop();
@@ -79,6 +139,7 @@ namespace BitSkull.Core
             //DBG
             vertexBuffer.Dispose();
             indexBuffer.Dispose();
+            shader.Dispose();
             //
 
             if(_window != null)

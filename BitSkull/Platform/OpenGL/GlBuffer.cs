@@ -1,5 +1,6 @@
 ﻿using BitSkull.Graphics;
 using Silk.NET.OpenGL;
+using System;
 
 namespace BitSkull.Platform.OpenGL
 {
@@ -21,6 +22,44 @@ namespace BitSkull.Platform.OpenGL
 
         public override void SetLayout(BufferLayout layot) => _layout = layot;
         public override BufferLayout GetLayot() => _layout;
+        public unsafe override void BindLayout()
+        {
+            GL gl = (Renderer.Context as GlRendererContext).Gl;
+
+            Bind();
+            uint idx = 0;
+            foreach (BufferElement el in _layout)
+            {
+                gl.EnableVertexAttribArray(idx);
+                gl.VertexAttribPointer(
+                    idx,
+                    (int)el.GetComponentCount(),
+                    el.Type switch
+                    {
+                        ShaderDataType.Int => GLEnum.Int,
+                        ShaderDataType.Int2 => GLEnum.Int,
+                        ShaderDataType.Int3 => GLEnum.Int,
+                        ShaderDataType.Int4 => GLEnum.Int,
+
+                        ShaderDataType.Float => GLEnum.Float,
+                        ShaderDataType.Float2 => GLEnum.Float,
+                        ShaderDataType.Float3 => GLEnum.Float,
+                        ShaderDataType.Float4 => GLEnum.Float,
+
+                        ShaderDataType.Mat3 => GLEnum.FloatMat3,
+                        ShaderDataType.Mat4 => GLEnum.FloatMat4,
+
+                        ShaderDataType.Bool => GLEnum.Bool,
+
+                        _ => throw new Exception("Unknown shader data type!")
+                    },
+                    el.Normalized,
+                    _layout.Stride,
+                    (void*)el.Offset
+                );
+                idx += 1;
+            }
+        }
 
         public override void Bind() => (Renderer.Context as GlRendererContext).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, _data);
         public override void Unbind() => (Renderer.Context as GlRendererContext).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);

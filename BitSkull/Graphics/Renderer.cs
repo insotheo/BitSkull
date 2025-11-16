@@ -37,6 +37,17 @@
             return null;
         }
 
+        /// <summary>
+        /// For OpenGL vertexShader and fragmentShader should be sources
+        /// </summary
+        public static Shader GenShader(string vertexShader, string fragmentShader)
+        {
+#if DEFAULT_PLATFORM
+            if (API == RendererApi.OpenGL) return new Platform.OpenGL.OpenGLShader(vertexShader, fragmentShader);
+#endif
+            return null;
+        }
+
         ////////////////////////////
 
 
