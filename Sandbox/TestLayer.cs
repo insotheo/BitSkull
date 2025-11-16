@@ -1,7 +1,6 @@
 ﻿using BitSkull;
 using BitSkull.Core;
 using BitSkull.Events;
-using BitSkull.InputSystem;
 
 namespace Sandbox
 {
@@ -18,16 +17,7 @@ namespace Sandbox
         }
 
         public override void OnUpdate(float dt)
-        {
-            if (Input.IsKeyUp(KeyCode.Escape))
-            {
-                Application.GetAppInstance().Stop();
-            }
-            else if (Input.IsAnyKeyUp() || Input.IsAnyMouseButtonUp())
-            {
-                counter++;
-                Log.Info($"FPS: {(int)(1 / dt)} | Counter: {counter}");
-            }
+        { 
         }
     }
 }

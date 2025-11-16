@@ -1,4 +1,5 @@
 ﻿using BitSkull.Events;
+using BitSkull.Graphics;
 using BitSkull.InputSystem;
 using BitSkull.Numerics;
 using System;
@@ -27,6 +28,7 @@ namespace BitSkull.Core
 
         public static Application GetAppInstance() => _inst;
 
+
         public void Run()
         {
             IsRunning = true;
@@ -50,6 +52,9 @@ namespace BitSkull.Core
                 foreach (Layer layer in _layerStack)
                     layer.OnUpdate(dt);
                 Input.Update();
+
+                //rendering
+                Renderer.Clear(1, 0, 0, 1);
             }
 
             dtStopwatch.Stop();
@@ -59,6 +64,7 @@ namespace BitSkull.Core
                 _window.Dispose();
                 _window = null;
             }
+            Renderer.Dispose();
         }
         public void Stop() => IsRunning = false;
 
@@ -125,6 +131,12 @@ namespace BitSkull.Core
                 }
                 return true;
             });
+            dispatcher.Dispatch<WindowEvent>((WindowEvent wndEvent) =>
+            {
+                if (wndEvent is WindowResizeEvent resizeEvent)
+                    Renderer.ResizeFramebuffer(resizeEvent.Width, resizeEvent.Height);
+                return false;
+            });
 
             for (int i = _layerStack.Count - 1; i >= 0; --i)
             {
@@ -134,12 +146,19 @@ namespace BitSkull.Core
             }
         }
 
-        public void CreateWindow(int width, int heigth, string title = "", bool vsync = true)
+        public void CreateWindow(int width, int heigth, string title = "", bool vsync = true, RendererApi api = RendererApi.None)
         {
             if (String.IsNullOrEmpty(title))
                 title = _name;
+            IRendererContext rendererCtx = null;
 #if DEFAULT_PLATFORM
-            _window = new Platform.GLFW.GLFWWindow(width, heigth, title, vsync);
+            _window = new Platform.GLFW.GLFWWindow(width, heigth, title, vsync, api);
+            if(api == RendererApi.OpenGL)
+            {
+                rendererCtx = new Platform.OpenGL.GlRendererContext();
+                rendererCtx.Initialize(_window.GetContext());
+            }
+            Renderer.Init(api, rendererCtx);
 #else
             throw new Exception("Platform exception: window not found");
 #endif

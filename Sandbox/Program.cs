@@ -1,6 +1,7 @@
 ﻿using System;
 using BitSkull;
 using BitSkull.Core;
+using BitSkull.Graphics;
 
 namespace Sandbox
 {
@@ -15,7 +16,7 @@ namespace Sandbox
             {
                 using (Application sandboxApp = new Application("Sandbox"))
                 {
-                    sandboxApp.CreateWindow(800, 550);
+                    sandboxApp.CreateWindow(800, 550, api: RendererApi.OpenGL);
                     sandboxApp.PushLayer(new TestLayer());
                     sandboxApp.Run();
                 }

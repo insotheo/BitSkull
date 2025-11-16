@@ -1,6 +1,8 @@
 ﻿using BitSkull.Core;
 using BitSkull.Events;
+using BitSkull.Graphics;
 using BitSkull.InputSystem;
+using Silk.NET.Core.Contexts;
 using Silk.NET.GLFW;
 using Silk.NET.Input;
 using System;
@@ -13,14 +15,20 @@ namespace BitSkull.Platform.GLFW
 
         private readonly WindowHandle* _glfwWindow;
 
-        internal GLFWWindow(int width, int height, string title, bool vsync = false)
+        internal GLFWWindow(int width, int height, string title, bool vsync = false, RendererApi api = RendererApi.OpenGL)
         {
             _glfw = Glfw.GetApi();
             if (!_glfw.Init())
                 throw new Exception("Failed to initialize GLFW");
 
-            //Just for now
-            _glfw.DefaultWindowHints();
+            if(api == RendererApi.OpenGL)
+            {
+                _glfw.WindowHint(WindowHintInt.ContextVersionMajor, 4);
+                _glfw.WindowHint(WindowHintInt.ContextVersionMinor, 6);
+                _glfw.WindowHint(WindowHintOpenGlProfile.OpenGlProfile, OpenGlProfile.Core);
+                if(Environment.OSVersion.Platform == PlatformID.Unix)
+                    _glfw.WindowHint(WindowHintBool.OpenGLForwardCompat, true);
+            }
 
             Width = width;
             Height = height;
@@ -117,6 +125,12 @@ namespace BitSkull.Platform.GLFW
         {
             _glfw.PollEvents();
             _glfw.SwapBuffers(_glfwWindow);
+        }
+
+        internal override INativeContext GetContext()
+        {
+            if (_glfwWindow != null) return new GlfwContext(_glfw, _glfwWindow);
+            return null;
         }
 
         public override void Dispose()

@@ -14,8 +14,9 @@ namespace BitSkull.Core
         internal virtual void Run() { }
         internal virtual void Close() { }
         internal virtual void SetVSync(bool vsync) { }
-
         internal virtual void DoUpdate(float dt) { }
+
+        internal virtual Silk.NET.Core.Contexts.INativeContext GetContext() { return null; }
 
         public virtual void Dispose() { }
     }
