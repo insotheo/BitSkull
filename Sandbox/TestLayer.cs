@@ -1,18 +1,14 @@
 ﻿using BitSkull.Core;
-using BitSkull.Events;
+using BitSkull.InputSystem;
 
 namespace Sandbox
 {
     internal class TestLayer : Layer
     {
-        int counter = 0;
-
-        public override void OnEvent(Event e)
-        {
-        }
-
         public override void OnUpdate(float dt)
-        { 
+        {
+            if (Input.IsKeyUp(KeyCode.Escape))
+                Application.GetAppInstance().Stop();
         }
     }
 }

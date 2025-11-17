@@ -1,4 +1,6 @@
-﻿namespace BitSkull.Graphics
+﻿using BitSkull.Graphics.Chain;
+
+namespace BitSkull.Graphics
 {
     internal static class Renderer
     {
@@ -11,7 +13,11 @@
             API = api;
             Context = ctx;
             _initialized = Context != null;
-            if (_initialized) Context.Configure();
+            if (_initialized)
+            {
+                Context.Configure();
+                RenderChain.Initialize();
+            }
         }
 
         ////////////////////////////
@@ -46,6 +52,19 @@
             if (API == RendererApi.OpenGL) return new Platform.OpenGL.OpenGLShader(vertexShader, fragmentShader);
 #endif
             return null;
+        }
+
+        public static void Render()
+        {
+            if (!_initialized) return;
+
+            foreach(ChainLink link in RenderChain.GetChainLinks())
+            {
+                if (!link.HasPlatform)
+                    continue;
+
+                Context.Draw(link);
+            }
         }
 
         ////////////////////////////

@@ -1,5 +1,6 @@
 ﻿using BitSkull.Events;
 using BitSkull.Graphics;
+using BitSkull.Graphics.Chain;
 using BitSkull.InputSystem;
 using BitSkull.Numerics;
 using System;
@@ -28,67 +29,183 @@ namespace BitSkull.Core
 
         public static Application GetAppInstance() => _inst;
 
-        //DBG
-        VertexBuffer vertexBuffer;
-        IndexBuffer indexBuffer;
-        uint vao;
-        Shader shader;
-        //
         public void Run()
         {
             //DBG
-            vertexBuffer = Renderer.GenVertexBuffer(new float[]
             {
-                //a_Pos  x      y        z          a_Color   r      g     b
-                        0.0f,   0.5f,    0.0f,               1.0f,  0.0f,  0.0f,
-                        -0.5f,  -0.5f,    0.0f,              0.0f,  1.0f,  0.0f,
-                        0.5f,  -0.5f,    0.0f,               0.0f,  0.0f,  1.0f,
-            });
-            vertexBuffer.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float3), new BufferElement("a_Color", ShaderDataType.Float3)));
-            vertexBuffer.Unbind();
+                var square_vbo = Renderer.GenVertexBuffer(new float[]
+                {
+                    //a_Pos  x      y        z          a_Color   r      g     b
+                            -0.5f,   0.5f,   0.0f,               1.0f,  0.0f,  0.0f,
+                            -0.5f,  -0.5f,   0.0f,               0.0f,  1.0f,  0.0f,
+                            0.5f,  -0.5f,    0.0f,               0.0f,  0.0f,  1.0f,
+                            0.5f,  0.5f,     0.0f,               0.5f,  0.0f,  0.5f,
+                });
+                square_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float3), new BufferElement("a_Color", ShaderDataType.Float3)));
+                square_vbo.Unbind();
 
-            indexBuffer = Renderer.GenIndexBuffer(new uint[]
-            {
-                0, 1, 2,
-            });
+                var square_ibo = Renderer.GenIndexBuffer(new uint[]
+                {
+                    0, 1, 2,
+                    2, 3, 0
+                });
 
-            vao = (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.GenVertexArray();
-            (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.BindVertexArray(vao);
-            vertexBuffer.Bind();
-            indexBuffer.Bind();
-            vertexBuffer.BindLayout();
-            (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.BindVertexArray(0);
-            vertexBuffer.Unbind();
-            indexBuffer.Unbind();
+                var triangle_vbo = Renderer.GenVertexBuffer(new float[]
+                {
+                    //a_Pos  x      y        z          a_Color   r      g     b
+                            0.0f,   0.25f,   0.0f,                1.0f,  1.0f,  1.0f,
+                            -0.25f,  -0.25f,   0.0f,               1.0f,  1.0f,  1.0f,
+                            0.25f,  -0.25f,    0.0f,               1.0f,  1.0f,  1.0f,
+                });
+                triangle_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float3), new BufferElement("a_Color", ShaderDataType.Float3)));
+                triangle_vbo.Unbind();
 
-            shader = Renderer.GenShader("""
-                #version 330 core
+                var triangle_ibo = Renderer.GenIndexBuffer(new uint[]
+                {
+                    0, 1, 2,
+                });
 
-                layout(location = 0) in vec3 a_Pos;
-                layout(location = 1) in vec3 a_Color;
+                var hex_vbo = Renderer.GenVertexBuffer(new float[]
+                {
+                    //x          y
+                    0.0f,       0.0f,
+                    -0.35f,     0.7f,
+                    -0.7f,      0.0f,
+                    -0.35f,     -0.7f,
+                     0.35f,     -0.7f,
+                     0.7f,       0.0f,
+                     0.35f,      0.7f,
+                });
+                hex_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2)));
+                hex_vbo.Unbind();
 
-                out vec4 vert_Color;
+                var hex_ibo = Renderer.GenIndexBuffer(new uint[]
+                {
+                    0, 1, 2,
+                    0, 2, 3,
+                    0, 3, 4,
+                    0, 4, 5,
+                    0, 5, 6,
+                    0, 6, 1,
+                });
+                hex_ibo.Unbind();
 
-                void main(){
-                    vert_Color = vec4(a_Color, 1.0);
-                    gl_Position = vec4(1.5 * a_Pos, 1.0);
-                }
-                """,
-                """
-                #version 330 core
+                var fish_eye_shader = Renderer.GenShader("""
+                    #version 330 core
 
-                layout(location = 0) out vec4 color;
+                    layout(location = 0) in vec3 a_Pos;
+                    layout(location = 1) in vec3 a_Color;
 
-                in vec4 vert_Color;
+                    out vec4 vert_Color;
 
-                void main(){
-                    color = vert_Color;
-                }
-                """);
+                    void main(){
+                        vert_Color = vec4(a_Color, 1.0);
+
+                        vec2 pos = a_Pos.xy;
+                        pos.x -= 0.25;
+                        pos.y -= 0.3;
+
+                        float r = length(pos);
+
+                        //fisheye
+                        float factor = 1.0 + 0.75 * r * r;
+                        vec2 fishPos = pos / factor;
+
+                        //ripple effect
+                        float ripple = sin(15.0 * r) * 0.03;
+                        fishPos += normalize(fishPos) * ripple;
+
+                        gl_Position = vec4(fishPos, a_Pos.z, 1.0);
+                    }
+                    """,
+
+                    """
+                    #version 330 core
+
+                    layout(location = 0) out vec4 color;
+
+                    in vec4 vert_Color;
+
+                    void main(){
+                        float gray = dot(vert_Color.rgb, vec3(0.299, 0.4, 0.114));
+                        color = vec4(vec3(gray), vert_Color.a);
+                    }
+                    """);
+
+                var shader2 = Renderer.GenShader("""
+                    #version 330 core
+
+                    layout(location = 0) in vec2 a_Pos;
+
+                    out vec2 vert_Pos;
+
+                    void main(){
+                        vert_Pos = a_Pos * 0.5 + 0.5; //[-1; 1] -> [0; 1]
+                        vec2 pos = a_Pos * 0.5;
+                        gl_Position = vec4(pos.x + 0.5, pos.y + 0.55, 0.0, 1.0);
+                    }
+                    """,
+                    """
+                    #version 330 core
+
+                    layout(location = 0) out vec4 color;
+
+                    in vec2 vert_Pos;
+
+                    void main(){
+                        vec2 center = vec2(0.5, 0.5);
+                        vec2 pos = vert_Pos - center;
+                        float dist = length(pos);
+
+                        if(dist <= 0.11){
+                            color = vec4(0.1, 0.1, 0.1, 1.0);
+                            return;
+                        }
+
+                        //iris
+                        if(dist <= 0.27){
+                            float angle = atan(pos.y, pos.x); //[-pi; pi]
+                            float r = dist;
+
+                            float flames = sin(20.0 * r + 10.0 * angle);
+                            flames = pow(flames, 0.8);
+
+                            vec3 col = mix(vec3(0.0), vec3(1.0, 0.0, 0.0), flames);
+                            col = mix(col, vec3(1.0, 0.5, 0.0), flames * 0.7);
+                            col = mix(col, vec3(1.0, 1.0, 0.0), flames * 0.4);
+
+                            col += vec3(1.0, 0.8, 0.5) * (0.05/r);
+
+                            color = vec4(clamp(col, 0.0, 1.0), 1.0);
+                            return;
+                        }
+
+                        if(dist <= 0.28){
+                            color = vec4(183.0/255.0, 95.0/255.0, 24.0/255.0, 0.97);
+                            return;
+                        }
+
+                        //sclera
+                        color = vec4(0.05, 0.05, 0.05, 1.0);
+                    }
+                    """
+                    );
+
+                var square = new ChainLink(square_vbo, square_ibo, fish_eye_shader);
+                var triangle = new ChainLink(triangle_vbo, triangle_ibo, fish_eye_shader);
+                var hex = new ChainLink(hex_vbo, hex_ibo, shader2);
+
+                RenderChain.PushLink(square);
+                RenderChain.PushLink(triangle);
+                RenderChain.PushLink(hex);
+
+                Log.Warn(RenderChain.GetChainLinks().Count);
+                RenderChain.Compress();
+                Log.Warn(RenderChain.GetChainLinks().Count);
+                RenderChain.Bake();
+            }
 
             Log.Info("Hello, Triangle!");
-
-            float time = 0;
             //
 
             IsRunning = true;
@@ -114,34 +231,13 @@ namespace BitSkull.Core
                 Input.Update();
 
                 //rendering
-                //DBG
-                time += dt;
-
-                float r = (MathF.Sin(time * 0.8f) + 1f) * 0.5f;
-                float g = (MathF.Sin(time * 1.5f + 2f) + 1f) * 0.5f;
-                float b = (MathF.Sin(time * 1.1f + 4f) + 1f) * 0.5f;
-
-                Renderer.Clear(r, g, b, 1);
-
-                (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.BindVertexArray(vao);
-                shader.Use();
-                unsafe
-                {
-                    (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.DrawElements(Silk.NET.OpenGL.PrimitiveType.Triangles, indexBuffer.GetCount(), Silk.NET.OpenGL.DrawElementsType.UnsignedInt, null);
-                }
-                shader.ZeroUse();
-                (Renderer.Context as Platform.OpenGL.GlRendererContext).Gl.BindVertexArray(0);
-                //
+                Renderer.Clear(0.3f, 0.5f, 0.78f, 1);
+                Renderer.Render();
             }
 
             dtStopwatch.Stop();
 
-            //DBG
-            vertexBuffer.Dispose();
-            indexBuffer.Dispose();
-            shader.Dispose();
-            //
-
+            RenderChain.Dispose();
             if(_window != null)
             {
                 _window.Dispose();

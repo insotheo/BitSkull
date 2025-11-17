@@ -1,4 +1,5 @@
 ﻿using BitSkull.Graphics;
+using BitSkull.Graphics.Chain;
 using Silk.NET.OpenGL;
 
 namespace BitSkull.Platform.OpenGL
@@ -12,7 +13,11 @@ namespace BitSkull.Platform.OpenGL
 
         public void Configure()
         {
-            Gl.Enable(GLEnum.ColorBufferBit | GLEnum.DepthBufferBit);
+            //Gl.Enable(GLEnum.DepthTest);
+            //Gl.Enable(GLEnum.CullFace);
+            //Gl.DepthFunc(GLEnum.Less);
+            Gl.Enable(GLEnum.Blend);
+            Gl.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         }
 
         public void Clear() => Gl.Clear(ClearBufferMask.ColorBufferBit);
@@ -24,5 +29,22 @@ namespace BitSkull.Platform.OpenGL
         }
 
         public void ResizeFramebuffer(int x, int y) => Gl.Viewport(0, 0, (uint)x, (uint)y);
+
+        public IPlatformChainLink GenPlatformChainLink(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) => new OpenGLChainLink(vertexBuffer, indexBuffer);
+
+        public unsafe void Draw(ChainLink link)
+        {
+            GL gl = (Renderer.Context as GlRendererContext).Gl;
+
+            link.Shader.Use();
+            
+            for(int i = 0; i < link.Platforms.Count; i++)
+            {
+                link.Platforms[i].Use();
+                gl.DrawElements(GLEnum.Triangles, link.IndicesCounts[i], DrawElementsType.UnsignedInt, null);
+            }
+
+            link.Shader.ZeroUse();
+        }
     }
 }

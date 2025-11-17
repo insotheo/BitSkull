@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BitSkull.Graphics.Chain;
+using System;
 
 namespace BitSkull.Graphics
 {
@@ -10,5 +11,8 @@ namespace BitSkull.Graphics
         public void Clear();
         public void Clear(float r, float g, float b, float a);
         public void ResizeFramebuffer(int x, int y);
+
+        public IPlatformChainLink GenPlatformChainLink(VertexBuffer vertexBuffer, IndexBuffer indexBuffer);
+        void Draw(ChainLink link);
     }
 }
