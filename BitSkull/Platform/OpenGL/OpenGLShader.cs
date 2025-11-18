@@ -86,7 +86,7 @@ namespace BitSkull.Platform.OpenGL
         public override void SetUniform(string name, float value) => (Renderer.Context as GlRendererContext).Gl.Uniform1(GetUniform(name), value);
         public override void SetUniform(string name, double value) => (Renderer.Context as GlRendererContext).Gl.Uniform1(GetUniform(name), value);
         public override void SetUniform(string name, Vec2D value) => (Renderer.Context as GlRendererContext).Gl.Uniform2(GetUniform(name), value.X, value.Y);
-        //public override void UniformVec3D(string name, Vec3D value) => (Renderer.Context as GlRendererContext).Gl.Uniform3(GetUniform(name), value.X, value.Y, value.Z);
+        public override void SetUniform(string name, Vec3D value) => (Renderer.Context as GlRendererContext).Gl.Uniform3(GetUniform(name), value.X, value.Y, value.Z);
         public override void SetUniform(string name, Color4 value) => (Renderer.Context as GlRendererContext).Gl.Uniform4(GetUniform(name), value.R, value.G, value.B, value.A);
         public unsafe override void SetUniform(string name, Matrix4x4 value)
         {

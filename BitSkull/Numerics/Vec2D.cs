@@ -19,12 +19,14 @@ namespace BitSkull.Numerics
         }
 
         public float Length => MathF.Sqrt(X * X + Y * Y);
+
         public Vec2D Normalized()
         {
             float len = Length;
             if (len == 0f) return new();
             return new(X / len, Y / len);
         }
+
 
         public static Vec2D operator +(Vec2D a, Vec2D b) => new(a.X + b.X, a.Y + b.Y);
         public static Vec2D operator *(Vec2D a, float c) => new(a.X * c, a.Y * c);
