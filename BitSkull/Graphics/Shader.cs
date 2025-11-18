@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Numerics;
+using BitSkull.Numerics;
 
 namespace BitSkull.Graphics
 {
@@ -9,5 +11,14 @@ namespace BitSkull.Graphics
         public virtual void Use() { }
         public virtual void ZeroUse() { }
         public virtual void Dispose() { }
+
+        //uniforms
+        public virtual void SetUniform(string name, int value) { }
+        public virtual void SetUniform(string name, float value) { }
+        public virtual void SetUniform(string name, double value) { }
+        public virtual void SetUniform(string name, Vec2D value) { }
+        public virtual void SetUniform(string name, Vec3D value) { }
+        public virtual void SetUniform(string name, Color4 value) { }
+        public virtual void SetUniform(string name, Matrix4x4 value) { }
     }
 }

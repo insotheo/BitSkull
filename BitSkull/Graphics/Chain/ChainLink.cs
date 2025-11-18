@@ -5,90 +5,52 @@ namespace BitSkull.Graphics.Chain
 {
     public class ChainLink : IDisposable
     {
-        internal List<VertexBuffer> VBuffers { get; private set; }
-        internal List<IndexBuffer> IBuffers { get; private set; }
-        internal uint[] IndicesCounts { get; private set; }
+        internal VertexBuffer VBuffer { get; private set; }
+        internal IndexBuffer IBuffer { get; private set; }
+        internal Shader Shader { get; private set; }
+        internal Material Material { get; private set; }
 
-        internal readonly Shader Shader;
 
+        internal IPlatformChainLink Platform { get; private set; } = null;
+        internal bool HasPlatform => Platform != null;
 
-        internal List<IPlatformChainLink> Platforms { get; private set; } = null;
-        internal bool HasPlatform => Platforms != null && Platforms.Count > 0;
-        private int _bakedCount = 0;
-
-        internal ChainLink(VertexBuffer vbo, IndexBuffer ibo, Shader shader = null)
+        internal ChainLink(VertexBuffer vbo, IndexBuffer ibo, Shader shader)
         {
-            VBuffers = new() { vbo };
-            IBuffers = new() { ibo };
-            Platforms = new();
+            VBuffer = vbo;
+            IBuffer = ibo;
             Shader = shader;
+            Material = new Material(shader);
         }
 
-        internal void Bake(bool force = false)
+        internal void Bake()
         {
-            if (_bakedCount == Platforms.Count && _bakedCount != 0 && !force)
-                return;
-
-            DetachPlatforms();
-            if (VBuffers.Count != IBuffers.Count && VBuffers.Count != 0 && IBuffers.Count != 0)
-                return;
+            DetachPlatform();
 
             List<uint> counts = new();
-            for (int i = 0; i < VBuffers.Count; i++)
-            {
-                IPlatformChainLink platform = Renderer.Context.GenPlatformChainLink(VBuffers[i], IBuffers[i]);
-                Platforms.Add(platform);
-                counts.Add(IBuffers[i].GetCount());
-            }
-
-            IndicesCounts = counts.ToArray();
-            counts.Clear();
-
-            _bakedCount = Platforms.Count;
+            IPlatformChainLink platform = Renderer.Context.GenPlatformChainLink(VBuffer, IBuffer);
+            Platform = platform;
         }
 
-        internal void AttachChainLink(ChainLink link)
+        internal void DetachPlatform()
         {
-            VBuffers.AddRange(link.VBuffers);
-            IBuffers.AddRange(link.IBuffers);
-            Platforms.AddRange(link.Platforms);
-            if (IndicesCounts != null && link.IndicesCounts != null)
-            {
-                uint[] tmp = new uint[IndicesCounts.Length + link.IndicesCounts.Length];
-                IndicesCounts.CopyTo(tmp, 0);
-                for (int i = IndicesCounts.Length; i < tmp.Length; i++)
-                    tmp[i] = link.IndicesCounts[i - IndicesCounts.Length];
-                tmp.CopyTo(IndicesCounts, 0);
-            }
+            Platform?.Dispose();
+            Platform = null;
         }
 
-        internal void DetachPlatforms()
+        public void Dispose(bool disposeShader = false)
         {
-            if (Platforms == null)
-                return;
+            DetachPlatform();
 
-            foreach (IPlatformChainLink platform in Platforms)
-                platform.Dispose();
-            Platforms.Clear();
-            _bakedCount = 0;
+            if (disposeShader)
+                Shader.Dispose();
+
+            VBuffer.Dispose();
+            VBuffer = null;
+
+            IBuffer.Dispose();
+            IBuffer = null;
         }
 
-        public void Dispose()
-        {
-            DetachPlatforms();
-            Platforms = null;
-
-            Shader?.Dispose();
-
-            foreach (VertexBuffer vbo in VBuffers)
-                vbo.Dispose();
-            VBuffers.Clear();
-            VBuffers = null;
-
-            foreach (IndexBuffer ibo in IBuffers)
-                ibo.Dispose();
-            IBuffers.Clear();
-            IBuffers = null;
-        }
+        public void Dispose() => Dispose(false);
     }
 }

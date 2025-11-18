@@ -4,85 +4,42 @@ namespace BitSkull.Graphics.Chain
 {
     internal static class RenderChain
     {
-        private static List<ChainLink> _links;
+        internal static Dictionary<Shader, List<ChainLink>> GroupedLinks { get; private set; }
+        internal static bool Initialized => GroupedLinks != null;
 
         public static void Initialize()
         {
-            _links = new List<ChainLink>();
+            GroupedLinks = new Dictionary<Shader, List<ChainLink>>();
         }
 
-        internal static void PushLink(ChainLink link) => _links.Add(link);
-        internal static void ClearChain()
+        internal static void PushLink(ChainLink link)
         {
-            foreach (ChainLink link in _links)
-                link.Dispose();
-            _links.Clear();
+            if(!GroupedLinks.ContainsKey(link.Shader))
+                GroupedLinks[link.Shader] = new List<ChainLink>();
+            GroupedLinks[link.Shader].Add(link);
         }
-        internal static List<ChainLink> GetChainLinks() => _links;
-
-        internal static void Compress()
-        {
-            if(_links == null || _links.Count <= 1) return;
-
-            Dictionary<Shader, List<ChainLink>> grouped = new();
-
-            foreach(ChainLink link in _links)
-            {
-                if (link.Shader == null)
-                    continue;
-
-                if (!grouped.ContainsKey(link.Shader))
-                    grouped[link.Shader] = new();
-
-                grouped[link.Shader].Add(link);
-            }
-
-            List<ChainLink> compressed = new();
-
-            foreach(var kvp in grouped)
-            {
-                var shader = kvp.Key;
-                var links = kvp.Value;
-
-                if(links.Count == 1)
-                {
-                    compressed.Add(links[0]);
-                    continue;
-                }
-
-                ChainLink mergedLink = new(links[0].VBuffers[0], links[0].IBuffers[0], shader);
-                for(int i = 1; i < links.Count; i++)
-                {
-                    mergedLink.AttachChainLink(links[i]);
-                }
-
-                compressed.Add(mergedLink);
-            }
-
-            _links = compressed;
-        }
-
 
         internal static void Bake()
         {
-            foreach (ChainLink link in _links)
-                link.Bake();
-        }
-
-        internal static void Rebake()
-        {
-            foreach (ChainLink link in _links)
-                link.DetachPlatforms();
-            Bake();
+            foreach (List<ChainLink> group in GroupedLinks.Values)
+                foreach(ChainLink link in group)
+                    link.Bake();
         }
 
         internal static void Dispose()
         {
-            if (_links == null) return;
+            if (GroupedLinks == null)
+                return;
 
-            foreach(ChainLink link in _links)
-                link.Dispose();
-            _links.Clear();
+            foreach (var group in GroupedLinks.Values)
+            {
+                foreach (var link in group)
+                    link.Dispose();
+                group.Clear();
+            }
+            foreach (Shader shader in GroupedLinks.Keys)
+                shader.Dispose();
+            GroupedLinks.Clear();
         }
     }
 }

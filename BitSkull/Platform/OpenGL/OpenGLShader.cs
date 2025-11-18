@@ -1,11 +1,16 @@
 ﻿using BitSkull.Graphics;
+using BitSkull.Numerics;
 using Silk.NET.OpenGL;
 using System;
+using System.Collections.Generic;
+using System.Numerics;
 
 namespace BitSkull.Platform.OpenGL
 {
     internal sealed class OpenGLShader : Graphics.Shader
     {
+        private Dictionary<string, int> _uniforms;
+
         private uint _program;
 
         internal OpenGLShader(string vertexSrc, string fragmentSrc)
@@ -56,11 +61,39 @@ namespace BitSkull.Platform.OpenGL
             gl.DetachShader(_program, fragmentShader);
             gl.DeleteShader(vertexShader);
             gl.DeleteShader(fragmentShader);
+
+            _uniforms = new Dictionary<string, int>();
         }
 
         public override void Use() => (Renderer.Context as GlRendererContext).Gl.UseProgram(_program);
         public override void ZeroUse() => (Renderer.Context as GlRendererContext).Gl.UseProgram(0);
 
         public override void Dispose() => (Renderer.Context as GlRendererContext).Gl.DeleteProgram(_program);
+
+        #region uniforms
+        private int GetUniform(string name)
+        {
+            if(_uniforms.ContainsKey(name))
+                return _uniforms[name];
+
+            int loc = (Renderer.Context as GlRendererContext).Gl.GetUniformLocation(_program, name);
+            _uniforms.Add(name, loc);
+            return loc;
+        }
+
+
+        public override void SetUniform(string name, int value) => (Renderer.Context as GlRendererContext).Gl.Uniform1(GetUniform(name), value);
+        public override void SetUniform(string name, float value) => (Renderer.Context as GlRendererContext).Gl.Uniform1(GetUniform(name), value);
+        public override void SetUniform(string name, double value) => (Renderer.Context as GlRendererContext).Gl.Uniform1(GetUniform(name), value);
+        public override void SetUniform(string name, Vec2D value) => (Renderer.Context as GlRendererContext).Gl.Uniform2(GetUniform(name), value.X, value.Y);
+        //public override void UniformVec3D(string name, Vec3D value) => (Renderer.Context as GlRendererContext).Gl.Uniform3(GetUniform(name), value.X, value.Y, value.Z);
+        public override void SetUniform(string name, Color4 value) => (Renderer.Context as GlRendererContext).Gl.Uniform4(GetUniform(name), value.R, value.G, value.B, value.A);
+        public unsafe override void SetUniform(string name, Matrix4x4 value)
+        {
+            int loc = GetUniform(name);
+            (Renderer.Context as GlRendererContext).Gl.UniformMatrix4(loc, 1, false, (float*)&value);
+        }
+
+        #endregion
     }
 }

@@ -29,19 +29,24 @@ namespace BitSkull.Core
 
         public static Application GetAppInstance() => _inst;
 
+        //DBG
+        ChainLink square;
+        //
+
         public void Run()
         {
             //DBG
             {
                 var square_vbo = Renderer.GenVertexBuffer(new float[]
                 {
-                    //a_Pos  x      y        z          a_Color   r      g     b
-                            -0.5f,   0.5f,   0.0f,               1.0f,  0.0f,  0.0f,
-                            -0.5f,  -0.5f,   0.0f,               0.0f,  1.0f,  0.0f,
-                            0.5f,  -0.5f,    0.0f,               0.0f,  0.0f,  1.0f,
-                            0.5f,  0.5f,     0.0f,               0.5f,  0.0f,  0.5f,
+                    //a_Pos  x            y
+                            -0.75f,       0.75f,
+                            -0.75f,      -0.75f,
+                             0.75f,      -0.75f,
+                             0.75f,       0.75f
                 });
-                square_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float3), new BufferElement("a_Color", ShaderDataType.Float3)));
+
+                square_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2)));
                 square_vbo.Unbind();
 
                 var square_ibo = Renderer.GenIndexBuffer(new uint[]
@@ -50,162 +55,52 @@ namespace BitSkull.Core
                     2, 3, 0
                 });
 
-                var triangle_vbo = Renderer.GenVertexBuffer(new float[]
-                {
-                    //a_Pos  x      y        z          a_Color   r      g     b
-                            0.0f,   0.25f,   0.0f,                1.0f,  1.0f,  1.0f,
-                            -0.25f,  -0.25f,   0.0f,               1.0f,  1.0f,  1.0f,
-                            0.25f,  -0.25f,    0.0f,               1.0f,  1.0f,  1.0f,
-                });
-                triangle_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float3), new BufferElement("a_Color", ShaderDataType.Float3)));
-                triangle_vbo.Unbind();
-
-                var triangle_ibo = Renderer.GenIndexBuffer(new uint[]
-                {
-                    0, 1, 2,
-                });
-
-                var hex_vbo = Renderer.GenVertexBuffer(new float[]
-                {
-                    //x          y
-                    0.0f,       0.0f,
-                    -0.35f,     0.7f,
-                    -0.7f,      0.0f,
-                    -0.35f,     -0.7f,
-                     0.35f,     -0.7f,
-                     0.7f,       0.0f,
-                     0.35f,      0.7f,
-                });
-                hex_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2)));
-                hex_vbo.Unbind();
-
-                var hex_ibo = Renderer.GenIndexBuffer(new uint[]
-                {
-                    0, 1, 2,
-                    0, 2, 3,
-                    0, 3, 4,
-                    0, 4, 5,
-                    0, 5, 6,
-                    0, 6, 1,
-                });
-                hex_ibo.Unbind();
-
-                var fish_eye_shader = Renderer.GenShader("""
-                    #version 330 core
-
-                    layout(location = 0) in vec3 a_Pos;
-                    layout(location = 1) in vec3 a_Color;
-
-                    out vec4 vert_Color;
-
-                    void main(){
-                        vert_Color = vec4(a_Color, 1.0);
-
-                        vec2 pos = a_Pos.xy;
-                        pos.x -= 0.25;
-                        pos.y -= 0.3;
-
-                        float r = length(pos);
-
-                        //fisheye
-                        float factor = 1.0 + 0.75 * r * r;
-                        vec2 fishPos = pos / factor;
-
-                        //ripple effect
-                        float ripple = sin(15.0 * r) * 0.03;
-                        fishPos += normalize(fishPos) * ripple;
-
-                        gl_Position = vec4(fishPos, a_Pos.z, 1.0);
-                    }
-                    """,
-
-                    """
-                    #version 330 core
-
-                    layout(location = 0) out vec4 color;
-
-                    in vec4 vert_Color;
-
-                    void main(){
-                        float gray = dot(vert_Color.rgb, vec3(0.299, 0.4, 0.114));
-                        color = vec4(vec3(gray), vert_Color.a);
-                    }
-                    """);
-
-                var shader2 = Renderer.GenShader("""
+                var shader = Renderer.GenShader("""
                     #version 330 core
 
                     layout(location = 0) in vec2 a_Pos;
 
-                    out vec2 vert_Pos;
+                    out vec2 v_Pos;
 
                     void main(){
-                        vert_Pos = a_Pos * 0.5 + 0.5; //[-1; 1] -> [0; 1]
-                        vec2 pos = a_Pos * 0.5;
-                        gl_Position = vec4(pos.x + 0.5, pos.y + 0.55, 0.0, 1.0);
+                        v_Pos = vec2(a_Pos.x, -a_Pos.y);
+                        gl_Position = vec4(a_Pos, 0.0, 1.0);
                     }
                     """,
                     """
                     #version 330 core
 
-                    layout(location = 0) out vec4 color;
+                    layout(location = 0) out vec4 frag_color;
 
-                    in vec2 vert_Pos;
+                    in vec2 v_Pos;
+
+                    uniform float u_Time;
+                    uniform float u_Radius = 0.1f;
+                    uniform vec2 u_MousePos;
 
                     void main(){
-                        vec2 center = vec2(0.5, 0.5);
-                        vec2 pos = vert_Pos - center;
-                        float dist = length(pos);
+                        vec2 uv = v_Pos * 0.5 + 0.5;
+                        float dist = distance(uv, u_MousePos);
 
-                        if(dist <= 0.11){
-                            color = vec4(0.1, 0.1, 0.1, 1.0);
-                            return;
-                        }
+                        float r = (sin(u_Time * 0.8) + 1.0) * 0.5;
+                        float g = (sin(u_Time * 1.5 + 2.0) + 1.0) * 0.5;
+                        float b = (sin(u_Time * 1.1 + 4.0) + 1.0) * 0.5;
+                        vec3 baseColor = vec3(r, g, b);
 
-                        //iris
-                        if(dist <= 0.27){
-                            float angle = atan(pos.y, pos.x); //[-pi; pi]
-                            float r = dist;
+                        //circle effect
+                        float circleMask = smoothstep(u_Radius, u_Radius - 0.02, dist);
+                        vec3 finalColor = mix(baseColor, vec3(0.4), 1.0 - circleMask);
 
-                            float flames = sin(20.0 * r + 10.0 * angle);
-                            flames = pow(flames, 0.8);
-
-                            vec3 col = mix(vec3(0.0), vec3(1.0, 0.0, 0.0), flames);
-                            col = mix(col, vec3(1.0, 0.5, 0.0), flames * 0.7);
-                            col = mix(col, vec3(1.0, 1.0, 0.0), flames * 0.4);
-
-                            col += vec3(1.0, 0.8, 0.5) * (0.05/r);
-
-                            color = vec4(clamp(col, 0.0, 1.0), 1.0);
-                            return;
-                        }
-
-                        if(dist <= 0.28){
-                            color = vec4(183.0/255.0, 95.0/255.0, 24.0/255.0, 0.97);
-                            return;
-                        }
-
-                        //sclera
-                        color = vec4(0.05, 0.05, 0.05, 1.0);
+                        frag_color = vec4(finalColor, 1.0);
                     }
                     """
                     );
 
-                var square = new ChainLink(square_vbo, square_ibo, fish_eye_shader);
-                var triangle = new ChainLink(triangle_vbo, triangle_ibo, fish_eye_shader);
-                var hex = new ChainLink(hex_vbo, hex_ibo, shader2);
+                square = new ChainLink(square_vbo, square_ibo, shader);
 
                 RenderChain.PushLink(square);
-                RenderChain.PushLink(triangle);
-                RenderChain.PushLink(hex);
-
-                Log.Warn(RenderChain.GetChainLinks().Count);
-                RenderChain.Compress();
-                Log.Warn(RenderChain.GetChainLinks().Count);
                 RenderChain.Bake();
             }
-
-            Log.Info("Hello, Triangle!");
             //
 
             IsRunning = true;
@@ -217,6 +112,7 @@ namespace BitSkull.Core
             double prevTime = dtStopwatch.Elapsed.TotalSeconds, currTime = 0.0;
             float dt = 0.0f;
 
+            float time = dt;
             while (IsRunning)
             {
                 currTime = dtStopwatch.Elapsed.TotalSeconds;
@@ -233,6 +129,12 @@ namespace BitSkull.Core
                 //rendering
                 Renderer.Clear(0.3f, 0.5f, 0.78f, 1);
                 Renderer.Render();
+
+                time += dt;
+                square.Material.SetReal("u_Time", time * 2f);
+
+                Vec2D mousePos = Input.GetMousePos();
+                square.Material.SetVec2D("u_MousePos", new(mousePos.X / (float)_window.Width, mousePos.Y / (float)_window.Height));
             }
 
             dtStopwatch.Stop();

@@ -1,6 +1,7 @@
 ﻿using BitSkull.Graphics;
 using BitSkull.Graphics.Chain;
 using Silk.NET.OpenGL;
+using System.Collections.Generic;
 
 namespace BitSkull.Platform.OpenGL
 {
@@ -32,19 +33,21 @@ namespace BitSkull.Platform.OpenGL
 
         public IPlatformChainLink GenPlatformChainLink(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) => new OpenGLChainLink(vertexBuffer, indexBuffer);
 
-        public unsafe void Draw(ChainLink link)
+        public unsafe void Draw(Graphics.Shader shader, List<ChainLink> links)
         {
             GL gl = (Renderer.Context as GlRendererContext).Gl;
 
-            link.Shader.Use();
-            
-            for(int i = 0; i < link.Platforms.Count; i++)
+            shader.Use();
+
+            foreach (ChainLink link in links)
             {
-                link.Platforms[i].Use();
-                gl.DrawElements(GLEnum.Triangles, link.IndicesCounts[i], DrawElementsType.UnsignedInt, null);
+                link.Material.Apply();
+                link.Platform.Use();
+                gl.DrawElements(GLEnum.Triangles, link.IBuffer.GetCount(), GLEnum.UnsignedInt, null);
+                link.Platform.Unuse();
             }
 
-            link.Shader.ZeroUse();
+            shader.ZeroUse();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BitSkull.Graphics.Chain;
+using System.Collections.Generic;
 
 namespace BitSkull.Graphics
 {
@@ -56,15 +57,10 @@ namespace BitSkull.Graphics
 
         public static void Render()
         {
-            if (!_initialized) return;
+            if (!_initialized || !RenderChain.Initialized) return;
 
-            foreach(ChainLink link in RenderChain.GetChainLinks())
-            {
-                if (!link.HasPlatform)
-                    continue;
-
-                Context.Draw(link);
-            }
+            foreach((Shader shader, List<ChainLink> links) in RenderChain.GroupedLinks)
+                Context.Draw(shader, links);
         }
 
         ////////////////////////////
