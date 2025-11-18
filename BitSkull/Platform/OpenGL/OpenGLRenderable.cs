@@ -1,4 +1,5 @@
-﻿using BitSkull.Graphics;
+﻿using BitSkull.Core;
+using BitSkull.Graphics;
 using BitSkull.Graphics.Queue;
 using Silk.NET.OpenGL;
 
@@ -13,7 +14,7 @@ namespace BitSkull.Platform.OpenGL
             if (vertexBuffer == null || indexBuffer == null)
                 return;
 
-            GL gl = (Renderer.Context as OpenGLBackend).Gl;
+            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
 
             _vao = gl.GenVertexArray();
             gl.BindVertexArray(_vao);
@@ -28,10 +29,10 @@ namespace BitSkull.Platform.OpenGL
             indexBuffer.Unbind();
         }
 
-        public void Dispose() => (Renderer.Context as OpenGLBackend).Gl.DeleteVertexArray(_vao);
+        public void Dispose() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.DeleteVertexArray(_vao);
 
 
-        public void Unbind() => (Renderer.Context as OpenGLBackend).Gl.BindVertexArray(0);
-        public void Bind() => (Renderer.Context as OpenGLBackend).Gl.BindVertexArray(_vao);
+        public void Unbind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindVertexArray(0);
+        public void Bind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindVertexArray(_vao);
     }
 }

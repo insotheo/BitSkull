@@ -2,31 +2,31 @@
 
 namespace BitSkull.Graphics.Queue
 {
-    internal static class RenderQueue
+    internal class RenderQueue
     {
-        internal static Dictionary<Shader, List<Renderable>> Queue { get; private set; }
-        internal static bool Initialized => Queue != null;
+        internal Dictionary<Shader, List<Renderable>> Queue { get; private set; }
+        internal bool Initialized => Queue != null;
 
-        public static void Initialize()
+        internal RenderQueue()
         {
             Queue = new Dictionary<Shader, List<Renderable>>();
         }
 
-        internal static void Push(Renderable item)
+        internal void Push(Renderable item)
         {
             if (!Queue.ContainsKey(item.Shader))
                 Queue[item.Shader] = new List<Renderable>();
             Queue[item.Shader].Add(item);
         }
 
-        internal static void Bake()
+        internal void Bake()
         {
             foreach (List<Renderable> group in Queue.Values)
                 foreach (Renderable item in group)
                     item.Bake();
         }
 
-        internal static void Dispose()
+        internal void Dispose()
         {
             if (Queue == null)
                 return;

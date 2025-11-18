@@ -1,4 +1,5 @@
-﻿using BitSkull.Graphics;
+﻿using BitSkull.Core;
+using BitSkull.Graphics;
 using BitSkull.Graphics.Queue;
 using Silk.NET.OpenGL;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace BitSkull.Platform.OpenGL
 
         public unsafe void Draw(Graphics.Shader shader, List<Renderable> links)
         {
-            GL gl = (Renderer.Context as OpenGLBackend).Gl;
+            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
 
             shader.Use();
 

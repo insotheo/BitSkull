@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BitSkull.Core;
+using System;
 using System.Collections.Generic;
 
 namespace BitSkull.Graphics.Queue
@@ -27,7 +28,7 @@ namespace BitSkull.Graphics.Queue
             DetachPlatform();
 
             List<uint> counts = new();
-            IPlatformRenderable platform = Renderer.Context.CreatePlatformRenderable(VBuffer, IBuffer);
+            IPlatformRenderable platform = Application.GetAppRenderer().Context.CreatePlatformRenderable(VBuffer, IBuffer);
             Platform = platform;
         }
 

@@ -1,4 +1,5 @@
-﻿using BitSkull.Graphics;
+﻿using BitSkull.Core;
+using BitSkull.Graphics;
 using Silk.NET.OpenGL;
 using System;
 
@@ -11,7 +12,7 @@ namespace BitSkull.Platform.OpenGL
 
         public OpenGLVertexBuffer(float[] vertices)
         {
-            GL gl = (Renderer.Context as OpenGLBackend).Gl;
+            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
             _data = gl.GenBuffer();
 
             Bind();
@@ -24,7 +25,7 @@ namespace BitSkull.Platform.OpenGL
         public override BufferLayout GetLayot() => _layout;
         public unsafe override void BindLayout()
         {
-            GL gl = (Renderer.Context as OpenGLBackend).Gl;
+            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
 
             Bind();
             uint idx = 0;
@@ -61,9 +62,9 @@ namespace BitSkull.Platform.OpenGL
             }
         }
 
-        public override void Bind() => (Renderer.Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, _data);
-        public override void Unbind() => (Renderer.Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
-        public override void Dispose() => (Renderer.Context as OpenGLBackend).Gl.DeleteBuffer(_data);
+        public override void Bind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, _data);
+        public override void Unbind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        public override void Dispose() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.DeleteBuffer(_data);
     }
 
     internal sealed unsafe class OpenGLIndexBuffer : IndexBuffer
@@ -73,7 +74,7 @@ namespace BitSkull.Platform.OpenGL
 
         public OpenGLIndexBuffer(uint[] indices)
         {
-            GL gl = (Renderer.Context as OpenGLBackend).Gl;
+            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
             _count = (uint)indices.Length;
 
             _data = gl.GenBuffer();
@@ -86,8 +87,8 @@ namespace BitSkull.Platform.OpenGL
 
         public override uint GetCount() => _count;
 
-        public override void Bind() => (Renderer.Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _data);
-        public override void Unbind() => (Renderer.Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
-        public override void Dispose() => (Renderer.Context as OpenGLBackend).Gl.DeleteBuffer(_data);
+        public override void Bind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _data);
+        public override void Unbind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
+        public override void Dispose() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.DeleteBuffer(_data);
     }
 }

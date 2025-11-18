@@ -14,6 +14,7 @@ namespace BitSkull.Core
         private readonly string _name;
         private readonly LayerStack _layerStack;
         private BaseWindow _window;
+        private static Renderer _renderer;
 
         public bool IsRunning { get; private set; } = false;
 
@@ -28,6 +29,7 @@ namespace BitSkull.Core
         }
 
         public static Application GetAppInstance() => _instance;
+        public static Renderer GetAppRenderer() => _renderer;
 
         //DBG
         Renderable square;
@@ -37,7 +39,7 @@ namespace BitSkull.Core
         {
             //DBG
             {
-                var square_vbo = Renderer.GenVertexBuffer(new float[]
+                var square_vbo = _renderer.GenVertexBuffer(new float[]
                 {
                     //a_Pos  x            y
                             -0.75f,       0.75f,
@@ -49,13 +51,13 @@ namespace BitSkull.Core
                 square_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2)));
                 square_vbo.Unbind();
 
-                var square_ibo = Renderer.GenIndexBuffer(new uint[]
+                var square_ibo = _renderer.GenIndexBuffer(new uint[]
                 {
                     0, 1, 2,
                     2, 3, 0
                 });
 
-                var shader = Renderer.GenShader("""
+                var shader = _renderer.GenShader("""
                     #version 330 core
 
                     layout(location = 0) in vec2 a_Pos;
@@ -98,8 +100,8 @@ namespace BitSkull.Core
 
                 square = new Renderable(square_vbo, square_ibo, shader);
 
-                RenderQueue.Push(square);
-                RenderQueue.Bake();
+                _renderer.Queue.Push(square);
+                _renderer.Queue.Bake();
             }
             //
 
@@ -127,8 +129,8 @@ namespace BitSkull.Core
                 Input.Update();
 
                 //rendering
-                Renderer.Clear(0.3f, 0.5f, 0.78f, 1);
-                Renderer.ExecuteRenderQueue();
+                _renderer.Clear(0.3f, 0.5f, 0.78f, 1);
+                _renderer.ExecuteRenderQueue();
 
                 time += dt;
                 square.Material.SetReal("u_Time", time * 2f);
@@ -139,13 +141,13 @@ namespace BitSkull.Core
 
             dtStopwatch.Stop();
 
-            RenderQueue.Dispose();
+            _renderer.Queue.Dispose();
             if (_window != null)
             {
                 _window.Dispose();
                 _window = null;
             }
-            Renderer.Dispose();
+            _renderer.Dispose();
         }
         public void Stop() => IsRunning = false;
 
@@ -215,7 +217,7 @@ namespace BitSkull.Core
             dispatcher.Dispatch<WindowEvent>((WindowEvent wndEvent) =>
             {
                 if (wndEvent is WindowResizeEvent resizeEvent)
-                    Renderer.ResizeFramebuffer(resizeEvent.Width, resizeEvent.Height);
+                    _renderer.ResizeFramebuffer(resizeEvent.Width, resizeEvent.Height);
                 return false;
             });
 
@@ -239,7 +241,7 @@ namespace BitSkull.Core
                 rendererCtx = new Platform.OpenGL.OpenGLBackend();
                 rendererCtx.Initialize(_window.GetContext());
             }
-            Renderer.Init(api, rendererCtx);
+            _renderer = new Renderer(api, rendererCtx);
 #else
             throw new Exception("Platform exception: window not found");
 #endif

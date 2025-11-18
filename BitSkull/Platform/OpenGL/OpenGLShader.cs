@@ -1,4 +1,4 @@
-﻿using BitSkull.Graphics;
+﻿using BitSkull.Core;
 using BitSkull.Numerics;
 using Silk.NET.OpenGL;
 using System;
@@ -15,7 +15,7 @@ namespace BitSkull.Platform.OpenGL
 
         internal OpenGLShader(string vertexSrc, string fragmentSrc)
         {
-            GL gl = (Renderer.Context as OpenGLBackend).Gl;
+            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
 
             uint vertexShader = gl.CreateShader(ShaderType.VertexShader);
             gl.ShaderSource(vertexShader, vertexSrc);
@@ -65,10 +65,10 @@ namespace BitSkull.Platform.OpenGL
             _uniforms = new Dictionary<string, int>();
         }
 
-        public override void Use() => (Renderer.Context as OpenGLBackend).Gl.UseProgram(_program);
-        public override void ZeroUse() => (Renderer.Context as OpenGLBackend).Gl.UseProgram(0);
+        public override void Use() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.UseProgram(_program);
+        public override void ZeroUse() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.UseProgram(0);
 
-        public override void Dispose() => (Renderer.Context as OpenGLBackend).Gl.DeleteProgram(_program);
+        public override void Dispose() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.DeleteProgram(_program);
 
         #region uniforms
         private int GetUniform(string name)
@@ -76,22 +76,22 @@ namespace BitSkull.Platform.OpenGL
             if (_uniforms.ContainsKey(name))
                 return _uniforms[name];
 
-            int loc = (Renderer.Context as OpenGLBackend).Gl.GetUniformLocation(_program, name);
+            int loc = (Application.GetAppRenderer().Context as OpenGLBackend).Gl.GetUniformLocation(_program, name);
             _uniforms.Add(name, loc);
             return loc;
         }
 
 
-        public override void SetUniform(string name, int value) => (Renderer.Context as OpenGLBackend).Gl.Uniform1(GetUniform(name), value);
-        public override void SetUniform(string name, float value) => (Renderer.Context as OpenGLBackend).Gl.Uniform1(GetUniform(name), value);
-        public override void SetUniform(string name, double value) => (Renderer.Context as OpenGLBackend).Gl.Uniform1(GetUniform(name), value);
-        public override void SetUniform(string name, Vec2D value) => (Renderer.Context as OpenGLBackend).Gl.Uniform2(GetUniform(name), value.X, value.Y);
-        public override void SetUniform(string name, Vec3D value) => (Renderer.Context as OpenGLBackend).Gl.Uniform3(GetUniform(name), value.X, value.Y, value.Z);
-        public override void SetUniform(string name, Color4 value) => (Renderer.Context as OpenGLBackend).Gl.Uniform4(GetUniform(name), value.R, value.G, value.B, value.A);
+        public override void SetUniform(string name, int value) => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.Uniform1(GetUniform(name), value);
+        public override void SetUniform(string name, float value) => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.Uniform1(GetUniform(name), value);
+        public override void SetUniform(string name, double value) => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.Uniform1(GetUniform(name), value);
+        public override void SetUniform(string name, Vec2D value) => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.Uniform2(GetUniform(name), value.X, value.Y);
+        public override void SetUniform(string name, Vec3D value) => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.Uniform3(GetUniform(name), value.X, value.Y, value.Z);
+        public override void SetUniform(string name, Color4 value) => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.Uniform4(GetUniform(name), value.R, value.G, value.B, value.A);
         public unsafe override void SetUniform(string name, Matrix4x4 value)
         {
             int loc = GetUniform(name);
-            (Renderer.Context as OpenGLBackend).Gl.UniformMatrix4(loc, 1, false, (float*)&value);
+            (Application.GetAppRenderer().Context as OpenGLBackend).Gl.UniformMatrix4(loc, 1, false, (float*)&value);
         }
 
         #endregion

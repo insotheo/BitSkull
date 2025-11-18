@@ -1,15 +1,19 @@
 ﻿using BitSkull.Graphics.Queue;
+using System;
 using System.Collections.Generic;
 
 namespace BitSkull.Graphics
 {
-    internal static class Renderer
+    public class Renderer : IDisposable
     {
-        public static RendererApi API { get; private set; }
-        public static IRenderBackend Context { get; private set; }
-        private static bool _initialized = false;
+        public RendererApi API { get; private set; }
+        public IRenderBackend Context { get; private set; }
+        private bool _initialized = false;
 
-        public static void Init(RendererApi api, IRenderBackend ctx)
+        internal RenderQueue Queue { get; private set; }
+        //TODO: Make Queue private and add methods to add Renderables to it
+
+        public Renderer(RendererApi api, IRenderBackend ctx)
         {
             API = api;
             Context = ctx;
@@ -17,20 +21,20 @@ namespace BitSkull.Graphics
             if (_initialized)
             {
                 Context.Configure();
-                RenderQueue.Initialize();
+                Queue = new RenderQueue();
             }
         }
 
         ////////////////////////////
 
-        public static void ResizeFramebuffer(int x, int y) => Context?.ResizeFramebuffer(x, y);
+        public void ResizeFramebuffer(int x, int y) => Context?.ResizeFramebuffer(x, y);
 
-        public static void Clear() => Context?.Clear();
-        public static void Clear(float r, float g, float b, float a) => Context?.Clear(r, g, b, a);
+        public void Clear() => Context?.Clear();
+        public void Clear(float r, float g, float b, float a) => Context?.Clear(r, g, b, a);
 
         #region Generators
 
-        public static VertexBuffer GenVertexBuffer(float[] vertices)
+        public VertexBuffer GenVertexBuffer(float[] vertices)
         {
 #if DEFAULT_PLATFORM
             if (API == RendererApi.OpenGL) return new Platform.OpenGL.OpenGLVertexBuffer(vertices);
@@ -38,7 +42,7 @@ namespace BitSkull.Graphics
             return null;
         }
 
-        public static IndexBuffer GenIndexBuffer(uint[] indices)
+        public IndexBuffer GenIndexBuffer(uint[] indices)
         {
 #if DEFAULT_PLATFORM
             if (API == RendererApi.OpenGL) return new Platform.OpenGL.OpenGLIndexBuffer(indices);
@@ -49,7 +53,7 @@ namespace BitSkull.Graphics
         /// <summary>
         /// For OpenGL vertexShader and fragmentShader should be sources
         /// </summary>
-        public static Shader GenShader(string vertexShader, string fragmentShader)
+        public Shader GenShader(string vertexShader, string fragmentShader)
         {
 #if DEFAULT_PLATFORM
             if (API == RendererApi.OpenGL) return new Platform.OpenGL.OpenGLShader(vertexShader, fragmentShader);
@@ -59,18 +63,18 @@ namespace BitSkull.Graphics
 
         #endregion
 
-        public static void ExecuteRenderQueue()
+        public void ExecuteRenderQueue()
         {
-            if (!_initialized || !RenderQueue.Initialized) return;
+            if (!_initialized || !Queue.Initialized) return;
 
-            foreach ((Shader shader, List<Renderable> links) in RenderQueue.Queue)
+            foreach ((Shader shader, List<Renderable> links) in Queue.Queue)
                 Context.Draw(shader, links);
         }
 
         ////////////////////////////
 
 
-        public static void Dispose()
+        public void Dispose()
         {
             if (_initialized)
             {
