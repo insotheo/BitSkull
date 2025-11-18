@@ -1,7 +1,7 @@
-﻿using System;
-using BitSkull;
+﻿using BitSkull;
 using BitSkull.Core;
 using BitSkull.Graphics;
+using System;
 
 namespace Sandbox
 {
@@ -21,11 +21,10 @@ namespace Sandbox
                     sandboxApp.Run();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error(ex);
             }
         }
     }
 }
-    

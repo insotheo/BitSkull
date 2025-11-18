@@ -6,8 +6,8 @@ namespace BitSkull.Graphics
     {
         protected IndexBuffer() { }
 
-        public virtual void Bind() {}
-        public virtual void Unbind() {}
+        public virtual void Bind() { }
+        public virtual void Unbind() { }
         public virtual uint GetCount() { return 0; }
         public virtual void Dispose() { }
     }
@@ -16,7 +16,7 @@ namespace BitSkull.Graphics
     {
         protected VertexBuffer() { }
 
-        public virtual void Bind() {}
+        public virtual void Bind() { }
         public virtual void Unbind() { }
         public virtual void SetLayout(BufferLayout layot) { }
         public virtual BufferLayout GetLayot() { return null; }

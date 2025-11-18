@@ -68,7 +68,7 @@ namespace BitSkull.Core
 
         internal Layer At(int i)
         {
-            if(i > _layers.Count || i < 0) return null;
+            if (i > _layers.Count || i < 0) return null;
             return _layers[i];
         }
 

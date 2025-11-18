@@ -1,4 +1,4 @@
-﻿using BitSkull.Graphics.Chain;
+﻿using BitSkull.Graphics.Queue;
 using System.Collections.Generic;
 
 namespace BitSkull.Graphics
@@ -6,10 +6,10 @@ namespace BitSkull.Graphics
     internal static class Renderer
     {
         public static RendererApi API { get; private set; }
-        public static IRendererContext Context { get; private set; }
+        public static IRenderBackend Context { get; private set; }
         private static bool _initialized = false;
 
-        public static void Init(RendererApi api, IRendererContext ctx)
+        public static void Init(RendererApi api, IRenderBackend ctx)
         {
             API = api;
             Context = ctx;
@@ -17,7 +17,7 @@ namespace BitSkull.Graphics
             if (_initialized)
             {
                 Context.Configure();
-                RenderChain.Initialize();
+                RenderQueue.Initialize();
             }
         }
 
@@ -27,6 +27,8 @@ namespace BitSkull.Graphics
 
         public static void Clear() => Context?.Clear();
         public static void Clear(float r, float g, float b, float a) => Context?.Clear(r, g, b, a);
+
+        #region Generators
 
         public static VertexBuffer GenVertexBuffer(float[] vertices)
         {
@@ -46,7 +48,7 @@ namespace BitSkull.Graphics
 
         /// <summary>
         /// For OpenGL vertexShader and fragmentShader should be sources
-        /// </summary
+        /// </summary>
         public static Shader GenShader(string vertexShader, string fragmentShader)
         {
 #if DEFAULT_PLATFORM
@@ -55,11 +57,13 @@ namespace BitSkull.Graphics
             return null;
         }
 
-        public static void Render()
-        {
-            if (!_initialized || !RenderChain.Initialized) return;
+        #endregion
 
-            foreach((Shader shader, List<ChainLink> links) in RenderChain.GroupedLinks)
+        public static void ExecuteRenderQueue()
+        {
+            if (!_initialized || !RenderQueue.Initialized) return;
+
+            foreach ((Shader shader, List<Renderable> links) in RenderQueue.Queue)
                 Context.Draw(shader, links);
         }
 

@@ -21,12 +21,12 @@ namespace BitSkull.Platform.GLFW
             if (!_glfw.Init())
                 throw new Exception("Failed to initialize GLFW");
 
-            if(api == RendererApi.OpenGL)
+            if (api == RendererApi.OpenGL)
             {
                 _glfw.WindowHint(WindowHintInt.ContextVersionMajor, 4);
                 _glfw.WindowHint(WindowHintInt.ContextVersionMinor, 6);
                 _glfw.WindowHint(WindowHintOpenGlProfile.OpenGlProfile, OpenGlProfile.Core);
-                if(Environment.OSVersion.Platform == PlatformID.Unix)
+                if (Environment.OSVersion.Platform == PlatformID.Unix)
                     _glfw.WindowHint(WindowHintBool.OpenGLForwardCompat, true);
             }
 
@@ -43,8 +43,11 @@ namespace BitSkull.Platform.GLFW
             _glfw.MakeContextCurrent(_glfwWindow);
             SetVSync(vsync);
 
+            SetupCallbacks();
+        }
 
-            ////////////////////////////////////////////////////////////////////////Events
+        private void SetupCallbacks()
+        {
             _glfw.SetWindowCloseCallback(_glfwWindow, (WindowHandle* wnd) =>
             {
                 Application.GetAppInstance().OnEvent(new AppCloseEvent());
@@ -53,14 +56,15 @@ namespace BitSkull.Platform.GLFW
             //Input
             _glfw.SetKeyCallback(_glfwWindow, (WindowHandle* wnd, Keys key, int scancode, InputAction action, KeyModifiers mods) =>
             {
+                Application appInstance = Application.GetAppInstance();
                 switch (action)
                 {
                     case InputAction.Press:
-                        Application.GetAppInstance().OnEvent(new KeyPressedEvent((KeyCode)(Key)key));
+                        appInstance.OnEvent(new KeyPressedEvent((KeyCode)(Key)key));
                         break;
 
                     case InputAction.Release:
-                        Application.GetAppInstance().OnEvent(new KeyReleasedEvent((KeyCode)(Key)key));
+                        appInstance.OnEvent(new KeyReleasedEvent((KeyCode)(Key)key));
                         break;
 
                     default: break;
@@ -72,14 +76,15 @@ namespace BitSkull.Platform.GLFW
             });
             _glfw.SetMouseButtonCallback(_glfwWindow, (WindowHandle* wnd, Silk.NET.GLFW.MouseButton btn, InputAction action, KeyModifiers mods) =>
             {
+                Application appInstance = Application.GetAppInstance();
                 switch (action)
                 {
                     case InputAction.Press:
-                        Application.GetAppInstance().OnEvent(new MouseButtonPressed((InputSystem.MouseButton)(Silk.NET.Input.MouseButton)btn));
+                        appInstance.OnEvent(new MouseButtonPressed((InputSystem.MouseButton)(Silk.NET.Input.MouseButton)btn));
                         break;
 
                     case InputAction.Release:
-                        Application.GetAppInstance().OnEvent(new MouseButtonReleased((InputSystem.MouseButton)(Silk.NET.Input.MouseButton)btn));
+                        appInstance.OnEvent(new MouseButtonReleased((InputSystem.MouseButton)(Silk.NET.Input.MouseButton)btn));
                         break;
 
                     default: break;
@@ -110,7 +115,6 @@ namespace BitSkull.Platform.GLFW
                 IsFocused = focus;
                 Application.GetAppInstance().OnEvent(new WindowFocusEvent(focus));
             });
-            ////////////////////////////////////////////////////////////////////////
         }
 
         internal override void Run() => _glfw.ShowWindow(_glfwWindow);

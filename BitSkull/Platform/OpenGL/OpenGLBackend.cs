@@ -1,11 +1,11 @@
 ﻿using BitSkull.Graphics;
-using BitSkull.Graphics.Chain;
+using BitSkull.Graphics.Queue;
 using Silk.NET.OpenGL;
 using System.Collections.Generic;
 
 namespace BitSkull.Platform.OpenGL
 {
-    internal sealed class GlRendererContext : IRendererContext
+    internal sealed class OpenGLBackend : IRenderBackend
     {
         internal GL Gl { get; private set; }
 
@@ -25,26 +25,26 @@ namespace BitSkull.Platform.OpenGL
 
         public void Clear(float r, float g, float b, float a)
         {
-            Clear();
             Gl.ClearColor(r, g, b, a);
+            Clear();
         }
 
         public void ResizeFramebuffer(int x, int y) => Gl.Viewport(0, 0, (uint)x, (uint)y);
 
-        public IPlatformChainLink GenPlatformChainLink(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) => new OpenGLChainLink(vertexBuffer, indexBuffer);
+        public IPlatformRenderable CreatePlatformRenderable(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) => new OpenGLRenderable(vertexBuffer, indexBuffer);
 
-        public unsafe void Draw(Graphics.Shader shader, List<ChainLink> links)
+        public unsafe void Draw(Graphics.Shader shader, List<Renderable> links)
         {
-            GL gl = (Renderer.Context as GlRendererContext).Gl;
+            GL gl = (Renderer.Context as OpenGLBackend).Gl;
 
             shader.Use();
 
-            foreach (ChainLink link in links)
+            foreach (Renderable link in links)
             {
                 link.Material.Apply();
-                link.Platform.Use();
+                link.Platform.Bind();
                 gl.DrawElements(GLEnum.Triangles, link.IBuffer.GetCount(), GLEnum.UnsignedInt, null);
-                link.Platform.Unuse();
+                link.Platform.Unbind();
             }
 
             shader.ZeroUse();

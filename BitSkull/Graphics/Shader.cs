@@ -1,6 +1,6 @@
-﻿using System;
+﻿using BitSkull.Numerics;
+using System;
 using System.Numerics;
-using BitSkull.Numerics;
 
 namespace BitSkull.Graphics
 {
@@ -11,6 +11,7 @@ namespace BitSkull.Graphics
         public virtual void Use() { }
         public virtual void ZeroUse() { }
         public virtual void Dispose() { }
+
 
         //uniforms
         public virtual void SetUniform(string name, int value) { }

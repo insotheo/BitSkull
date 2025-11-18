@@ -17,6 +17,7 @@ namespace BitSkull.Graphics
         }
 
         #region Setters
+
         public void SetInt(string name, int value) => _pendingUniforms.Add(shader => shader.SetUniform(name, value));
         public void SetReal(string name, float value) => _pendingUniforms.Add(shader => shader.SetUniform(name, value));
         public void SetReal(string name, double value) => _pendingUniforms.Add(shader => shader.SetUniform(name, value));
@@ -24,11 +25,12 @@ namespace BitSkull.Graphics
         public void SetVec3D(string name, Vec3D value) => _pendingUniforms.Add(shader => shader.SetUniform(name, value));
         public void SetColor(string name, Color4 value) => _pendingUniforms.Add(shader => shader.SetUniform(name, value));
         public void SetMat4(string name, Matrix4x4 value) => _pendingUniforms.Add(shader => shader.SetUniform(name, value));
+
         #endregion
 
         internal void Apply()
         {
-            foreach(var action in _pendingUniforms)
+            foreach (var action in _pendingUniforms)
                 action(_shader);
         }
     }

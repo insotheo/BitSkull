@@ -26,12 +26,12 @@ namespace BitSkull.Numerics
                 throw new ArgumentException("Hex string cannot be null or empty");
 
             hex = hex.TrimStart('#');
-            if(hex.Length != 6)
+            if (hex.Length != 6)
                 throw new ArgumentException("Hex string must be 6(RRGGBB) characters long");
 
             byte r = Convert.ToByte(hex.Substring(0, 2), 16);
-            byte g = Convert.ToByte(hex.Substring(0, 2), 16);
-            byte b = Convert.ToByte(hex.Substring(0, 2), 16);
+            byte g = Convert.ToByte(hex.Substring(2, 4), 16);
+            byte b = Convert.ToByte(hex.Substring(4, 6), 16);
 
             R = r / 255f;
             G = g / 255f;

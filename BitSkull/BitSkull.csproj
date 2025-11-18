@@ -3,7 +3,7 @@
     <PropertyGroup>
       <TargetFramework>net8.0</TargetFramework>
 	  <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-	  <OutDir>..\Bin\Engine\Lib\</OutDir>
+	  <OutDir>..\Bin\Engine\Lib\$(Configuration)\</OutDir>
 	  <AppendTargetFrameworkToOutDir>False</AppendTargetFrameworkToOutDir>
 	  <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 	    
@@ -17,6 +17,10 @@
 	    <!--End of params-->
     </PropertyGroup>
 
+	<PropertyGroup>
+		<SilkNetVersion>2.22.0</SilkNetVersion>
+	</PropertyGroup>
+	
 	<ItemGroup>
 		<Compile Include="Core\**\*.cs" />
 		<Compile Include="Events\**\*.cs" />
@@ -25,7 +29,7 @@
 		<Compile Include="Graphics\**\*.cs" />
 		<Compile Include="Log.cs" />
 		
-		<PackageReference Include="Silk.NET.Input" Version="2.22.0" />
+		<PackageReference Include="Silk.NET.Input" Version="$(SilkNetVersion)" />
 	</ItemGroup>
 	
 	
@@ -34,8 +38,8 @@
 	  <Compile Include="Platform\GLFW\GLFWWindow.cs" />
 	  <Compile Include="Platform\OpenGL\*.cs" />
 		
-	  <PackageReference Include="Silk.NET.GLFW" Version="2.22.0" />
-	  <PackageReference Include="Silk.NET.OpenGL" Version="2.22.0" />
+	  <PackageReference Include="Silk.NET.GLFW" Version="$(SilkNetVersion)" />
+	  <PackageReference Include="Silk.NET.OpenGL" Version="$(SilkNetVersion)" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(PlatformBackend)'=='DEFAULT_PLATFORM'">

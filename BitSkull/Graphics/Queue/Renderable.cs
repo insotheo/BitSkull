@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BitSkull.Graphics.Chain
+namespace BitSkull.Graphics.Queue
 {
-    public class ChainLink : IDisposable
+    public class Renderable : IDisposable
     {
         internal VertexBuffer VBuffer { get; private set; }
         internal IndexBuffer IBuffer { get; private set; }
@@ -11,10 +11,10 @@ namespace BitSkull.Graphics.Chain
         internal Material Material { get; private set; }
 
 
-        internal IPlatformChainLink Platform { get; private set; } = null;
+        internal IPlatformRenderable Platform { get; private set; } = null;
         internal bool HasPlatform => Platform != null;
 
-        internal ChainLink(VertexBuffer vbo, IndexBuffer ibo, Shader shader)
+        internal Renderable(VertexBuffer vbo, IndexBuffer ibo, Shader shader)
         {
             VBuffer = vbo;
             IBuffer = ibo;
@@ -27,7 +27,7 @@ namespace BitSkull.Graphics.Chain
             DetachPlatform();
 
             List<uint> counts = new();
-            IPlatformChainLink platform = Renderer.Context.GenPlatformChainLink(VBuffer, IBuffer);
+            IPlatformRenderable platform = Renderer.Context.CreatePlatformRenderable(VBuffer, IBuffer);
             Platform = platform;
         }
 

@@ -1,6 +1,6 @@
 ﻿using BitSkull.Events;
 using BitSkull.Graphics;
-using BitSkull.Graphics.Chain;
+using BitSkull.Graphics.Queue;
 using BitSkull.InputSystem;
 using BitSkull.Numerics;
 using System;
@@ -10,7 +10,7 @@ namespace BitSkull.Core
 {
     public class Application : IDisposable
     {
-        private static Application _inst;
+        private static Application _instance;
         private readonly string _name;
         private readonly LayerStack _layerStack;
         private BaseWindow _window;
@@ -19,18 +19,18 @@ namespace BitSkull.Core
 
         public Application(string appName)
         {
-            if (_inst != null) throw new Exception("Application is already created!");
+            if (_instance != null) throw new Exception("Application is already created!");
 
             _name = appName;
             _layerStack = new LayerStack();
 
-            _inst = this;
+            _instance = this;
         }
 
-        public static Application GetAppInstance() => _inst;
+        public static Application GetAppInstance() => _instance;
 
         //DBG
-        ChainLink square;
+        Renderable square;
         //
 
         public void Run()
@@ -96,10 +96,10 @@ namespace BitSkull.Core
                     """
                     );
 
-                square = new ChainLink(square_vbo, square_ibo, shader);
+                square = new Renderable(square_vbo, square_ibo, shader);
 
-                RenderChain.PushLink(square);
-                RenderChain.Bake();
+                RenderQueue.Push(square);
+                RenderQueue.Bake();
             }
             //
 
@@ -120,7 +120,7 @@ namespace BitSkull.Core
                 prevTime = currTime;
 
                 //update
-                if(_window != null)
+                if (_window != null)
                     _window.DoUpdate(dt);
                 foreach (Layer layer in _layerStack)
                     layer.OnUpdate(dt);
@@ -128,7 +128,7 @@ namespace BitSkull.Core
 
                 //rendering
                 Renderer.Clear(0.3f, 0.5f, 0.78f, 1);
-                Renderer.Render();
+                Renderer.ExecuteRenderQueue();
 
                 time += dt;
                 square.Material.SetReal("u_Time", time * 2f);
@@ -139,13 +139,13 @@ namespace BitSkull.Core
 
             dtStopwatch.Stop();
 
-            RenderChain.Dispose();
-            if(_window != null)
+            RenderQueue.Dispose();
+            if (_window != null)
             {
                 _window.Dispose();
                 _window = null;
             }
-            Renderer.Dispose(); 
+            Renderer.Dispose();
         }
         public void Stop() => IsRunning = false;
 
@@ -154,7 +154,7 @@ namespace BitSkull.Core
             Stop();
             _layerStack.Clear();
 
-            _inst = null;
+            _instance = null;
             GC.SuppressFinalize(this);
         }
 
@@ -227,16 +227,16 @@ namespace BitSkull.Core
             }
         }
 
-        public void CreateWindow(int width, int heigth, string title = "", bool vsync = true, RendererApi api = RendererApi.None)
+        public void CreateWindow(int width, int height, string title = "", bool vsync = true, RendererApi api = RendererApi.None)
         {
             if (String.IsNullOrEmpty(title))
                 title = _name;
-            IRendererContext rendererCtx = null;
+            IRenderBackend rendererCtx = null;
 #if DEFAULT_PLATFORM
-            _window = new Platform.GLFW.GLFWWindow(width, heigth, title, vsync, api);
-            if(api == RendererApi.OpenGL)
+            _window = new Platform.GLFW.GLFWWindow(width, height, title, vsync, api);
+            if (api == RendererApi.OpenGL)
             {
-                rendererCtx = new Platform.OpenGL.GlRendererContext();
+                rendererCtx = new Platform.OpenGL.OpenGLBackend();
                 rendererCtx.Initialize(_window.GetContext());
             }
             Renderer.Init(api, rendererCtx);

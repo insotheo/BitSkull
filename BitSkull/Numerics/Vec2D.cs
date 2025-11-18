@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 
 namespace BitSkull.Numerics
 {
@@ -33,11 +34,14 @@ namespace BitSkull.Numerics
         public static Vec2D operator *(float c, Vec2D a) => new(a.X * c, a.Y * c);
 
 
+        public Vector2 ToSystem() => new(X, Y);
+
+
         public override string ToString() => $"({X}, {Y})";
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode();
         public override bool Equals([NotNullWhen(true)] object obj)
         {
-            if(obj is Vec2D o) return o.X == X && o.Y == Y;
+            if (obj is Vec2D o) return o.X == X && o.Y == Y;
             return false;
         }
     }

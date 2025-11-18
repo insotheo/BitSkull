@@ -16,7 +16,7 @@ namespace BitSkull.InputSystem
         public static bool IsAnyKeyDown() => _keysDown.Count > 0;
         public static bool IsKeyUp(KeyCode key) => _keysUp.Contains(key);
         public static bool IsAnyKeyUp() => _keysUp.Count > 0;
-        
+
         public static bool IsMouseButtonDown(MouseButton button) => _mouseBtnDown.Contains(button);
         public static bool IsAnyMouseButtonDown() => _mouseBtnDown.Count > 0;
         public static bool IsMouseButtonUp(MouseButton button) => _mouseBtnUp.Contains(button);

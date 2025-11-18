@@ -5,7 +5,7 @@ namespace BitSkull.Core
     public class Layer
     {
         public string Name { get; }
-        
+
         public Layer(string name = "")
         {
             Name = name;

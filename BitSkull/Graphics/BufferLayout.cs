@@ -43,7 +43,7 @@ namespace BitSkull.Graphics
             };
         }
     }
-    
+
 
     public sealed class BufferLayout : IEnumerable
     {
@@ -60,7 +60,7 @@ namespace BitSkull.Graphics
         {
             uint offset = 0;
             Stride = 0;
-            foreach(BufferElement el in _elements)
+            foreach (BufferElement el in _elements)
             {
                 el.Offset = offset;
                 offset += el.Size;
