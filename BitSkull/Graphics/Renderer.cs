@@ -1,5 +1,4 @@
 ﻿using BitSkull.Assets;
-using BitSkull.Graphics.Queue;
 using System;
 using System.Collections.Generic;
 
@@ -11,7 +10,8 @@ namespace BitSkull.Graphics
         public IRenderBackend Backend { get; private set; }
         private bool _initialized = false;
 
-        private RenderQueue Queue;
+        private RenderQueue _queue;
+        private Dictionary<string, Shader> _shaders;
 
         public Renderer(RendererApi api, IRenderBackend backend)
         {
@@ -21,6 +21,8 @@ namespace BitSkull.Graphics
             if (_initialized)
             {
                 Backend.Configure();
+                _queue = new RenderQueue();
+                _shaders = new Dictionary<string, Shader>();
             }
         }
 
@@ -45,15 +47,6 @@ namespace BitSkull.Graphics
             return null;
         }
 
-        /// <summary>
-        /// For OpenGL vertexShader and fragmentShader should be sources
-        /// </summary>
-        public Shader GenShader(string vertexShader, string fragmentShader)
-        {
-            if(Backend != null) return Backend.GenShader(vertexShader, fragmentShader);
-            return null;
-        }
-
         public Texture2D GenTexure2D(Image img)
         {
             if(Backend != null) return Backend.GenTexture2D(img);
@@ -64,55 +57,76 @@ namespace BitSkull.Graphics
 
         public void ExecuteRenderQueue()
         {
-            if (!VerifyInitialization()) return;
-
-            foreach ((Shader shader, List<Renderable> links) in Queue.GetQueue())
-                Backend.Draw(shader, links);
+            if (!_initialized) return;
+            Backend.Draw(_queue);
         }
 
         ////////////////////////////
+
+        #region Shader Management
+
+        /// <summary>
+        /// For OpenGL vertexShader and fragmentShader should be sources
+        /// </summary>
+        public void CreateShader(string shaderName, string vertexShader, string fragmentShader)
+        {
+            if (Backend == null) return;
+            _shaders.Add(shaderName, Backend.GenShader(_shaders.Count, vertexShader, fragmentShader));
+        }
+
+        public Shader GetShader(string shaderName)
+        {
+            if (!_initialized || !_shaders.ContainsKey(shaderName)) return null;
+            return _shaders[shaderName];
+        }
+
+        #endregion
+
 
         #region Queue
 
         public void InitializeRenderQueue()
         {
             if (!_initialized) return;
-            Queue = new RenderQueue();
+            _queue = new RenderQueue();
         }
 
-        public void PushToRenderQueue(Renderable item)
+        public void PushToRenderQueue(string shaderName, Renderable item)
         {
-            if (!VerifyInitialization()) return;
-            Queue.Push(item);
+            if (!_initialized) return;
+            _queue.PushRenderable(item);
         }
 
         public void PopFromRenderQueue(Renderable item)
         {
-            if (!VerifyInitialization()) return;
-            Queue.Pop(item);
+            if (!_initialized) return;
+            _queue.PopRenderable(item);
         }
 
         public void BakeRenderQueue()
         {
-            if (!VerifyInitialization()) return;
-            Queue.Bake();
+            if (!_initialized) return;
+            _queue.BakeAll(this);
         }
+        #endregion
+
 
         public void DisposeRenderQueue()
         {
-            if (!VerifyInitialization()) return;
-            Queue.Dispose();
+            if(!_initialized) return;
+            _queue.DisposeAndClear();
         }
-
-        #endregion
-
 
         public void Dispose()
         {
             if (_initialized)
-                Backend.Dispose();
-        }
+            {
+                foreach (Shader shader in _shaders.Values)
+                    shader.Dispose();
+                _shaders.Clear();
 
-        private bool VerifyInitialization() => _initialized && (Queue == null ? false : Queue.Initialized);
+                Backend.Dispose();
+            }
+        }
     }
 }

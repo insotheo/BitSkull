@@ -1,7 +1,5 @@
 ﻿using BitSkull.Assets;
-using BitSkull.Graphics.Queue;
 using System;
-using System.Collections.Generic;
 
 namespace BitSkull.Graphics
 {
@@ -16,11 +14,11 @@ namespace BitSkull.Graphics
 
         public IPlatformRenderable CreatePlatformRenderable(VertexBuffer vertexBuffer, IndexBuffer indexBuffer);
 
-        void Draw(Shader shader, List<Renderable> renderables);
+        void Draw(RenderQueue queue);
 
         VertexBuffer GenVertexBuffer(float[] vertices);
         IndexBuffer GenIndexBuffer(uint[] indices);
-        Shader GenShader(string vertexShader, string fragmentShader);
+        Shader GenShader(int id, string vertexShader, string fragmentShader);
         Texture2D GenTexture2D(Image image);
     }
 }

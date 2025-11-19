@@ -1,5 +1,4 @@
 ﻿using BitSkull.Graphics;
-using BitSkull.Graphics.Queue;
 using Silk.NET.OpenGL;
 
 namespace BitSkull.Platform.OpenGL

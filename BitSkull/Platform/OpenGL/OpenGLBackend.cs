@@ -1,8 +1,6 @@
 ﻿using BitSkull.Assets;
 using BitSkull.Graphics;
-using BitSkull.Graphics.Queue;
 using Silk.NET.OpenGL;
-using System.Collections.Generic;
 
 namespace BitSkull.Platform.OpenGL
 {
@@ -34,34 +32,47 @@ namespace BitSkull.Platform.OpenGL
 
         public IPlatformRenderable CreatePlatformRenderable(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) => new OpenGLRenderable(_gl, vertexBuffer, indexBuffer);
 
-        public unsafe void Draw(Graphics.Shader shader, List<Renderable> links)
+        public unsafe void Draw(RenderQueue queue)
         {
-            shader.Use();
+            queue.Sort();
 
-            int texuturesCount = -1;
-            foreach (Renderable link in links)
+            Graphics.Shader prevShader = null;
+            Material prevMat = null;
+            Mesh prevMesh = null;
+
+            foreach(Renderable r in queue)
             {
-                if(link.Material.GetPendingTexturesCount() > texuturesCount)
-                    texuturesCount = link.Material.GetPendingTexturesCount();
+                if (!r.IsValid)
+                    continue;
 
-                link.Material.Apply();
-                link.Platform.Bind();
-                _gl.DrawElements(GLEnum.Triangles, link.IBuffer.GetCount(), GLEnum.UnsignedInt, null);
+                if(r.Material.Shader != prevShader)
+                {
+                    r.Material.Shader.Use();
+                    prevShader = r.Material.Shader;
+                }
+
+                if (prevMat != r.Material)
+                {
+                    r.Material.Apply();
+                    prevMat = r.Material;
+                }
+
+                if(prevMesh != r.Mesh)
+                {
+                    r.Mesh.UsePlatform();
+                    prevMesh = r.Mesh;
+                }
+
+                _gl.DrawElements(PrimitiveType.Triangles, r.Mesh.GetIndexCount(), DrawElementsType.UnsignedInt, null);
             }
 
-            shader.ZeroUse();
-
-            for (int i = 0; i <= texuturesCount; i++)
-            {
-                _gl.ActiveTexture(GLEnum.Texture0 + i);
-                _gl.BindTexture(GLEnum.Texture2D, 0);
-            }
             _gl.BindVertexArray(0);
+            _gl.UseProgram(0);
         }
 
         public VertexBuffer GenVertexBuffer(float[] vertices) => new OpenGLVertexBuffer(_gl, vertices);
         public IndexBuffer GenIndexBuffer(uint[] indices) => new OpenGLIndexBuffer(_gl, indices);
-        public Graphics.Shader GenShader(string vertexShader, string fragmentShader) => new OpenGLShader(_gl, vertexShader, fragmentShader);
+        public Graphics.Shader GenShader(int id, string vertexShader, string fragmentShader) => new OpenGLShader(_gl, id, vertexShader, fragmentShader);
         public Texture2D GenTexture2D(Image image) => new OpenGLTexture2D(_gl, image);
     }
 }

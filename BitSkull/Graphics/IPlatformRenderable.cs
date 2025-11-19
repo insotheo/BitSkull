@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BitSkull.Graphics.Queue
+namespace BitSkull.Graphics
 {
     public interface IPlatformRenderable : IDisposable
     {

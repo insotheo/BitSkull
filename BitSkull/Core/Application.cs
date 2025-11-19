@@ -1,6 +1,6 @@
-﻿using BitSkull.Events;
+﻿using BitSkull.Assets;
+using BitSkull.Events;
 using BitSkull.Graphics;
-using BitSkull.Graphics.Queue;
 using BitSkull.InputSystem;
 using BitSkull.Numerics;
 using System;
@@ -59,7 +59,8 @@ namespace BitSkull.Core
                     2, 3, 0
                 });
 
-                var shader = _renderer.GenShader("""
+                _renderer.CreateShader("testShader",
+                    """
                     #version 330 core
 
                     layout(location = 0) in vec2 a_Pos;
@@ -87,13 +88,16 @@ namespace BitSkull.Core
                     """
                     );
 
-                square = new Renderable(square_vbo, square_ibo, shader);
+                square = new Renderable(new Mesh(square_vbo, square_ibo, _renderer), new Material(_renderer.GetShader("testShader")));
 
+                Image img = null;
                 using (FileStream logo = File.OpenRead("Assets/logo.png"))
-                    square.Material.SaveTextureReference("mainTexture", _renderer.GenTexure2D(new Assets.Image(logo)));
-                square.Material.SetTexure("u_Texture", "mainTexture");
+                    img = new Image(logo);
+                square.Material.SaveTextureReference("mainTexture", _renderer.GenTexure2D(img));
+                img.Dispose();
+                square.Material.SetTexture("u_Texture", "mainTexture");
 
-                _renderer.PushToRenderQueue(square);
+                _renderer.PushToRenderQueue("testShader", square);
                 _renderer.BakeRenderQueue();
             }
             //
@@ -127,13 +131,16 @@ namespace BitSkull.Core
 
             dtStopwatch.Stop();
 
-            _renderer.DisposeRenderQueue();
+            if (_renderer != null)
+            {
+                _renderer.DisposeRenderQueue();
+                _renderer.Dispose();
+            }
             if (_window != null)
             {
                 _window.Dispose();
                 _window = null;
             }
-            _renderer.Dispose();
         }
         public void Stop() => IsRunning = false;
 

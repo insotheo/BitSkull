@@ -14,7 +14,7 @@ namespace BitSkull.Platform.OpenGL
 
         private readonly GL _gl;
 
-        internal OpenGLShader(GL gl, string vertexSrc, string fragmentSrc)
+        internal OpenGLShader(GL gl, int id, string vertexSrc, string fragmentSrc)
         {
             _gl = gl;
 
@@ -94,12 +94,12 @@ namespace BitSkull.Platform.OpenGL
             int loc = GetUniform(name);
             _gl.UniformMatrix4(loc, 1, false, (float*)&value);
         }
-        public override void SetUniform(string name, Graphics.Texture2D texture, int textureIdx = 0)
+        public override void SetUniform(string name, Graphics.Texture2D texture, int slot = 0)
         {
             OpenGLTexture2D glTexture = texture as OpenGLTexture2D;
-            _gl.ActiveTexture(GLEnum.Texture0 + textureIdx);
+            _gl.ActiveTexture(GLEnum.Texture0 + slot);
             glTexture.Bind();
-            _gl.Uniform1(GetUniform(name), textureIdx);
+            _gl.Uniform1(GetUniform(name), slot);
         }
 
         #endregion
