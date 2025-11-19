@@ -6,17 +6,16 @@ namespace BitSkull.Numerics
 {
     public struct Vec2D
     {
+        public static Vec2D Zero { get => new Vec2D(0f, 0f); }
+        public static Vec2D UniX { get => new Vec2D(1f, 0f); }
+        public static Vec2D UnitY { get => new Vec2D(0f, 1f); }
+
+
         public float X, Y;
 
         public Vec2D(float x, float y)
         {
             X = x; Y = y;
-        }
-
-        public Vec2D()
-        {
-            X = 0f;
-            Y = 0f;
         }
 
         public float Length => MathF.Sqrt(X * X + Y * Y);

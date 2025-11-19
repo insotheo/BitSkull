@@ -6,18 +6,17 @@ namespace BitSkull.Numerics
 {
     public struct Vec3D
     {
+        public static Vec3D Zero { get => new(0f, 0f, 0f); }
+        public static Vec3D UnitX { get => new(1f, 0f, 0f); }
+        public static Vec3D UnitY { get => new(0f, 1f, 0f); }
+        public static Vec3D UnitZ { get => new(0f, 0f, 1f); }
+
+
         public float X, Y, Z;
 
         public Vec3D(float x, float y, float z)
         {
             X = x; Y = y; Z = z;
-        }
-
-        public Vec3D()
-        {
-            X = 0f;
-            Y = 0f;
-            Z = 0f;
         }
 
         public float Length => MathF.Sqrt(X * X + Y * Y + Z * Z);
