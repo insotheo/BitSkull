@@ -37,6 +37,7 @@ namespace BitSkull.Core
 
         public void Run()
         {
+            _renderer.InitializeRenderQueue();
             //DBG
             {
                 var square_vbo = _renderer.GenVertexBuffer(new float[]
@@ -100,8 +101,8 @@ namespace BitSkull.Core
 
                 square = new Renderable(square_vbo, square_ibo, shader);
 
-                _renderer.Queue.Push(square);
-                _renderer.Queue.Bake();
+                _renderer.PushToRenderQueue(square);
+                _renderer.BakeRenderQueue();
             }
             //
 
@@ -141,7 +142,7 @@ namespace BitSkull.Core
 
             dtStopwatch.Stop();
 
-            _renderer.Queue.Dispose();
+            _renderer.DisposeRenderQueue();
             if (_window != null)
             {
                 _window.Dispose();

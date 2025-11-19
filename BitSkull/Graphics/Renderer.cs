@@ -7,46 +7,40 @@ namespace BitSkull.Graphics
     public class Renderer : IDisposable
     {
         public RendererApi API { get; private set; }
-        public IRenderBackend Context { get; private set; }
+        public IRenderBackend Backend { get; private set; }
         private bool _initialized = false;
 
-        internal RenderQueue Queue { get; private set; }
-        //TODO: Make Queue private and add methods to add Renderables to it
+        private RenderQueue Queue;
 
-        public Renderer(RendererApi api, IRenderBackend ctx)
+        public Renderer(RendererApi api, IRenderBackend backend)
         {
             API = api;
-            Context = ctx;
-            _initialized = Context != null;
+            Backend = backend;
+            _initialized = Backend != null;
             if (_initialized)
             {
-                Context.Configure();
-                Queue = new RenderQueue();
+                Backend.Configure();
             }
         }
 
         ////////////////////////////
 
-        public void ResizeFramebuffer(int x, int y) => Context?.ResizeFramebuffer(x, y);
+        public void ResizeFramebuffer(int x, int y) => Backend?.ResizeFramebuffer(x, y);
 
-        public void Clear() => Context?.Clear();
-        public void Clear(float r, float g, float b, float a) => Context?.Clear(r, g, b, a);
+        public void Clear() => Backend?.Clear();
+        public void Clear(float r, float g, float b, float a) => Backend?.Clear(r, g, b, a);
 
         #region Generators
 
         public VertexBuffer GenVertexBuffer(float[] vertices)
         {
-#if DEFAULT_PLATFORM
-            if (API == RendererApi.OpenGL) return new Platform.OpenGL.OpenGLVertexBuffer(vertices);
-#endif
+            if(Backend != null) return Backend.GenVertexBuffer(vertices);
             return null;
         }
 
         public IndexBuffer GenIndexBuffer(uint[] indices)
         {
-#if DEFAULT_PLATFORM
-            if (API == RendererApi.OpenGL) return new Platform.OpenGL.OpenGLIndexBuffer(indices);
-#endif
+            if(Backend != null) return Backend.GenIndexBuffer(indices);
             return null;
         }
 
@@ -55,9 +49,7 @@ namespace BitSkull.Graphics
         /// </summary>
         public Shader GenShader(string vertexShader, string fragmentShader)
         {
-#if DEFAULT_PLATFORM
-            if (API == RendererApi.OpenGL) return new Platform.OpenGL.OpenGLShader(vertexShader, fragmentShader);
-#endif
+            if(Backend != null) return Backend.GenShader(vertexShader, fragmentShader);
             return null;
         }
 
@@ -65,21 +57,55 @@ namespace BitSkull.Graphics
 
         public void ExecuteRenderQueue()
         {
-            if (!_initialized || !Queue.Initialized) return;
+            if (!VerifyInitialization()) return;
 
-            foreach ((Shader shader, List<Renderable> links) in Queue.Queue)
-                Context.Draw(shader, links);
+            foreach ((Shader shader, List<Renderable> links) in Queue.GetQueue())
+                Backend.Draw(shader, links);
         }
 
         ////////////////////////////
+
+        #region Queue
+
+        public void InitializeRenderQueue()
+        {
+            if (!_initialized) return;
+            Queue = new RenderQueue();
+        }
+
+        public void PushToRenderQueue(Renderable item)
+        {
+            if (!VerifyInitialization()) return;
+            Queue.Push(item);
+        }
+
+        public void PopFromRenderQueue(Renderable item)
+        {
+            if (!VerifyInitialization()) return;
+            Queue.Pop(item);
+        }
+
+        public void BakeRenderQueue()
+        {
+            if (!VerifyInitialization()) return;
+            Queue.Bake();
+        }
+
+        public void DisposeRenderQueue()
+        {
+            if (!VerifyInitialization()) return;
+            Queue.Dispose();
+        }
+
+        #endregion
 
 
         public void Dispose()
         {
             if (_initialized)
-            {
-                Context.Dispose();
-            }
+                Backend.Dispose();
         }
+
+        private bool VerifyInitialization() => _initialized && (Queue == null ? false : Queue.Initialized);
     }
 }

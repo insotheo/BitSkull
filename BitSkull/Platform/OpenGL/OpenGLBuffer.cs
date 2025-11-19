@@ -1,5 +1,4 @@
-﻿using BitSkull.Core;
-using BitSkull.Graphics;
+﻿using BitSkull.Graphics;
 using Silk.NET.OpenGL;
 using System;
 
@@ -8,16 +7,20 @@ namespace BitSkull.Platform.OpenGL
     internal sealed unsafe class OpenGLVertexBuffer : VertexBuffer
     {
         private uint _data;
+
         private BufferLayout _layout;
 
-        public OpenGLVertexBuffer(float[] vertices)
+        private readonly GL _gl;
+
+        public OpenGLVertexBuffer(GL gl, float[] vertices)
         {
-            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
-            _data = gl.GenBuffer();
+            _gl = gl;
+
+            _data = _gl.GenBuffer();
 
             Bind();
             fixed (void* v = vertices)
-                gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertices.Length * sizeof(float)), v, BufferUsageARB.StaticDraw);
+                _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertices.Length * sizeof(float)), v, BufferUsageARB.StaticDraw);
             Unbind();
         }
 
@@ -25,14 +28,12 @@ namespace BitSkull.Platform.OpenGL
         public override BufferLayout GetLayot() => _layout;
         public unsafe override void BindLayout()
         {
-            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
-
             Bind();
             uint idx = 0;
             foreach (BufferElement el in _layout)
             {
-                gl.EnableVertexAttribArray(idx);
-                gl.VertexAttribPointer(
+                _gl.EnableVertexAttribArray(idx);
+                _gl.VertexAttribPointer(
                     idx,
                     (int)el.GetComponentCount(),
                     el.Type switch
@@ -62,9 +63,9 @@ namespace BitSkull.Platform.OpenGL
             }
         }
 
-        public override void Bind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, _data);
-        public override void Unbind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
-        public override void Dispose() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.DeleteBuffer(_data);
+        public override void Bind() => _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _data);
+        public override void Unbind() => _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        public override void Dispose() => _gl.DeleteBuffer(_data);
     }
 
     internal sealed unsafe class OpenGLIndexBuffer : IndexBuffer
@@ -72,23 +73,25 @@ namespace BitSkull.Platform.OpenGL
         private uint _data;
         private uint _count;
 
-        public OpenGLIndexBuffer(uint[] indices)
+        private readonly GL _gl;
+
+        public OpenGLIndexBuffer(GL gl, uint[] indices)
         {
-            GL gl = (Application.GetAppRenderer().Context as OpenGLBackend).Gl;
+            _gl = gl;
             _count = (uint)indices.Length;
 
-            _data = gl.GenBuffer();
+            _data = _gl.GenBuffer();
 
             Bind();
             fixed (void* i = indices)
-                gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(_count * sizeof(uint)), i, BufferUsageARB.StaticDraw);
+                _gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(_count * sizeof(uint)), i, BufferUsageARB.StaticDraw);
             Unbind();
         }
 
         public override uint GetCount() => _count;
 
-        public override void Bind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _data);
-        public override void Unbind() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
-        public override void Dispose() => (Application.GetAppRenderer().Context as OpenGLBackend).Gl.DeleteBuffer(_data);
+        public override void Bind() => _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _data);
+        public override void Unbind() => _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
+        public override void Dispose() => _gl.DeleteBuffer(_data);
     }
 }

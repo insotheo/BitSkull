@@ -28,7 +28,7 @@ namespace BitSkull.Graphics.Queue
             DetachPlatform();
 
             List<uint> counts = new();
-            IPlatformRenderable platform = Application.GetAppRenderer().Context.CreatePlatformRenderable(VBuffer, IBuffer);
+            IPlatformRenderable platform = Application.GetAppRenderer().Backend.CreatePlatformRenderable(VBuffer, IBuffer);
             Platform = platform;
         }
 

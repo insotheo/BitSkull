@@ -16,5 +16,9 @@ namespace BitSkull.Graphics
         public IPlatformRenderable CreatePlatformRenderable(VertexBuffer vertexBuffer, IndexBuffer indexBuffer);
 
         void Draw(Shader shader, List<Renderable> renderables);
+
+        VertexBuffer GenVertexBuffer(float[] vertices);
+        IndexBuffer GenIndexBuffer(uint[] indices);
+        Shader GenShader(string vertexShader, string fragmentShader);
     }
 }
