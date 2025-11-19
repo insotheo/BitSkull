@@ -1,4 +1,5 @@
-﻿using BitSkull.Graphics.Queue;
+﻿using BitSkull.Assets;
+using BitSkull.Graphics.Queue;
 using System;
 using System.Collections.Generic;
 
@@ -50,6 +51,12 @@ namespace BitSkull.Graphics
         public Shader GenShader(string vertexShader, string fragmentShader)
         {
             if(Backend != null) return Backend.GenShader(vertexShader, fragmentShader);
+            return null;
+        }
+
+        public Texture2D GenTexure2D(Image img)
+        {
+            if(Backend != null) return Backend.GenTexture2D(img);
             return null;
         }
 

@@ -5,6 +5,7 @@ using BitSkull.InputSystem;
 using BitSkull.Numerics;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace BitSkull.Core
 {
@@ -42,14 +43,14 @@ namespace BitSkull.Core
             {
                 var square_vbo = _renderer.GenVertexBuffer(new float[]
                 {
-                    //a_Pos  x            y
-                            -0.75f,       0.75f,
-                            -0.75f,      -0.75f,
-                             0.75f,      -0.75f,
-                             0.75f,       0.75f
+                    //x          y          u       v
+                     -0.75f,    0.75f,    0.0f,   1.0f,
+                     -0.75f,   -0.75f,    0.0f,   0.0f,
+                      0.75f,   -0.75f,    1.0f,   0.0f,
+                      0.75f,    0.75f,    1.0f,   1.0f,
                 });
 
-                square_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2)));
+                square_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2), new BufferElement("a_UV", ShaderDataType.Float2)));
                 square_vbo.Unbind();
 
                 var square_ibo = _renderer.GenIndexBuffer(new uint[]
@@ -62,11 +63,12 @@ namespace BitSkull.Core
                     #version 330 core
 
                     layout(location = 0) in vec2 a_Pos;
+                    layout(location = 1) in vec2 a_UV;
 
-                    out vec2 v_Pos;
+                    out vec2 v_UV;
 
                     void main(){
-                        v_Pos = vec2(a_Pos.x, -a_Pos.y);
+                        v_UV = vec2(a_UV.x, -a_UV.y);
                         gl_Position = vec4(a_Pos, 0.0, 1.0);
                     }
                     """,
@@ -75,31 +77,21 @@ namespace BitSkull.Core
 
                     layout(location = 0) out vec4 frag_color;
 
-                    in vec2 v_Pos;
+                    in vec2 v_UV;
 
-                    uniform float u_Time;
-                    uniform float u_Radius = 0.1f;
-                    uniform vec2 u_MousePos;
+                    uniform sampler2D u_Texture;
 
                     void main(){
-                        vec2 uv = v_Pos * 0.5 + 0.5;
-                        float dist = distance(uv, u_MousePos);
-
-                        float r = (sin(u_Time * 0.8) + 1.0) * 0.5;
-                        float g = (sin(u_Time * 1.5 + 2.0) + 1.0) * 0.5;
-                        float b = (sin(u_Time * 1.1 + 4.0) + 1.0) * 0.5;
-                        vec3 baseColor = vec3(r, g, b);
-
-                        //circle effect
-                        float circleMask = smoothstep(u_Radius, u_Radius - 0.02, dist);
-                        vec3 finalColor = mix(baseColor, vec3(0.4), 1.0 - circleMask);
-
-                        frag_color = vec4(finalColor, 1.0);
+                        frag_color = texture(u_Texture, v_UV);
                     }
                     """
                     );
 
                 square = new Renderable(square_vbo, square_ibo, shader);
+
+                using (FileStream logo = File.OpenRead("Assets/logo.png"))
+                    square.Material.SaveTextureReference("mainTexture", _renderer.GenTexure2D(new Assets.Image(logo)));
+                square.Material.SetTexure("u_Texture", "mainTexture");
 
                 _renderer.PushToRenderQueue(square);
                 _renderer.BakeRenderQueue();
@@ -115,7 +107,6 @@ namespace BitSkull.Core
             double prevTime = dtStopwatch.Elapsed.TotalSeconds, currTime = 0.0;
             float dt = 0.0f;
 
-            float time = dt;
             while (IsRunning)
             {
                 currTime = dtStopwatch.Elapsed.TotalSeconds;
@@ -130,14 +121,8 @@ namespace BitSkull.Core
                 Input.Update();
 
                 //rendering
-                _renderer.Clear(0.3f, 0.5f, 0.78f, 1);
+                _renderer.Clear(0.3f, 0.5f, 0.78f, 1); //TOOD: camera color
                 _renderer.ExecuteRenderQueue();
-
-                time += dt;
-                square.Material.SetReal("u_Time", time * 2f);
-
-                Vec2D mousePos = Input.GetMousePos();
-                square.Material.SetVec2D("u_MousePos", new(mousePos.X / (float)_window.Width, mousePos.Y / (float)_window.Height));
             }
 
             dtStopwatch.Stop();

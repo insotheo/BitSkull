@@ -45,6 +45,9 @@ namespace BitSkull.Graphics.Queue
             if (disposeShader)
                 Shader.Dispose();
 
+            Material.ClearPending();
+            Material = null;
+
             VBuffer.Dispose();
             VBuffer = null;
 

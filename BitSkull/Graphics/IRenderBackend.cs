@@ -1,4 +1,5 @@
-﻿using BitSkull.Graphics.Queue;
+﻿using BitSkull.Assets;
+using BitSkull.Graphics.Queue;
 using System;
 using System.Collections.Generic;
 
@@ -20,5 +21,6 @@ namespace BitSkull.Graphics
         VertexBuffer GenVertexBuffer(float[] vertices);
         IndexBuffer GenIndexBuffer(uint[] indices);
         Shader GenShader(string vertexShader, string fragmentShader);
+        Texture2D GenTexture2D(Image image);
     }
 }

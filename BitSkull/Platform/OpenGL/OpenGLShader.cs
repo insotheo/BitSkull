@@ -94,6 +94,13 @@ namespace BitSkull.Platform.OpenGL
             int loc = GetUniform(name);
             _gl.UniformMatrix4(loc, 1, false, (float*)&value);
         }
+        public override void SetUniform(string name, Graphics.Texture2D texture, int textureIdx = 0)
+        {
+            OpenGLTexture2D glTexture = texture as OpenGLTexture2D;
+            _gl.ActiveTexture(GLEnum.Texture0 + textureIdx);
+            glTexture.Bind();
+            _gl.Uniform1(GetUniform(name), textureIdx);
+        }
 
         #endregion
     }

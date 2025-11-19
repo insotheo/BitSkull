@@ -21,5 +21,6 @@ namespace BitSkull.Graphics
         public virtual void SetUniform(string name, Vec3D value) { }
         public virtual void SetUniform(string name, Color4 value) { }
         public virtual void SetUniform(string name, Matrix4x4 value) { }
+        public virtual void SetUniform(string name, Texture2D texture, int idx = 0) { }
     }
 }
