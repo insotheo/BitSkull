@@ -20,7 +20,7 @@ namespace BitSkull.Numerics
             Matrix4x4 translation = Matrix4x4.CreateTranslation(Position.X, Position.Y, Position.Z);
             Matrix4x4 rotation = Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
             Matrix4x4 scale = Matrix4x4.CreateScale(Scale.X, Scale.Y, Scale.Z);
-            return scale * rotation * translation;
+            return (scale * rotation) * translation;
         }
     }
 }

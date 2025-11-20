@@ -5,8 +5,8 @@ namespace BitSkull.Graphics
 {
     public class RenderQueue : IEnumerable
     {
-        //Camera will be here...
         //Target's reference will be here...
+        public Camera Camera { get; private set; }
         private List<Renderable> _renderables;
         private bool _isSorted;
 
@@ -21,6 +21,8 @@ namespace BitSkull.Graphics
             _renderables.Add(renderable);
             _isSorted = false;
         }
+
+        public void SetCamera(Camera camera) => Camera = camera;
 
         internal void Sort()
         {

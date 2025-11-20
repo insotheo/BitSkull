@@ -30,11 +30,13 @@ namespace BitSkull.Core
         }
 
         public static Application GetAppInstance() => _instance;
-        public static Renderer GetAppRenderer() => _renderer;
+
+        public (int width, int height) GetWindowSize() => (_window.Width, _window.Height);
 
         //DBG
         Renderable square;
         Renderable triangle;
+        Camera cam;
         //
 
         public void Run()
@@ -89,7 +91,7 @@ namespace BitSkull.Core
 
                     void main(){
                         v_UV = vec2(a_UV.x, -a_UV.y);
-                        gl_Position = u_Model * vec4(a_Pos, 0.0, 1.0);
+                        gl_Position = u_Projection * u_View *  u_Model * vec4(a_Pos, 0.0, 1.0);
                     }
                     """,
                     """
@@ -119,6 +121,10 @@ namespace BitSkull.Core
                 square.Material.SaveTextureReference("mainTexture", _renderer.GenTexture2D(img));
                 img.Dispose();
                 square.Material.SetTexture("u_Texture", "mainTexture");
+
+                square.Transform.Position.Z = 1f;
+
+                cam = new Camera(CameraType.Orthographic);
             }
             //
 
@@ -157,6 +163,15 @@ namespace BitSkull.Core
                     square.Transform.Rotation.Z += Maths.DegToRad(90f) * dt;
                 if (Input.IsKeyDown(KeyCode.E))
                     square.Transform.Rotation.Z -= Maths.DegToRad(90f) * dt;
+
+                if (Input.IsKeyDown(KeyCode.Up))
+                    cam.Transform.Position.Y += 1f * dt;
+                if (Input.IsKeyDown(KeyCode.Down))
+                    cam.Transform.Position.Y -= 1f * dt;
+                if (Input.IsKeyDown(KeyCode.Right))
+                    cam.Transform.Position.X += 1f * dt;
+                if (Input.IsKeyDown(KeyCode.Left))
+                    cam.Transform.Position.X -= 1f * dt;
                 //
 
                 if (_window != null)
@@ -168,11 +183,14 @@ namespace BitSkull.Core
                 //rendering
                 _renderer.BeginFrame();
 
+                RenderQueue mainQueue = _renderer.CreateQueue();
+                mainQueue.PushRenderable(square);
+
                 RenderQueue triangleQueue = _renderer.CreateQueue();
                 triangleQueue.PushRenderable(triangle);
 
-                RenderQueue mainQueue = _renderer.CreateQueue();
-                mainQueue.PushRenderable(square);
+                mainQueue.SetCamera(cam);
+                triangleQueue.SetCamera(cam);
 
                 _renderer.EndFrame();
             }

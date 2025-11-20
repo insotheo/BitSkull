@@ -1,4 +1,5 @@
 ﻿using BitSkull.Assets;
+using BitSkull.Numerics;
 using System;
 using System.Collections.Generic;
 
@@ -145,7 +146,8 @@ namespace BitSkull.Graphics
             }
             if (_queues.Count > 0)
             {
-                Clear(0.3f, 0.4f, 0.7f, 1f); //TODO: take data from the first camera
+                Color4 clearColor = _queues[0].Camera == null ? new Color4(0.15f, 0.15f, 0.15f) : _queues[0].Camera.ClearColor;
+                Clear(clearColor.R, clearColor.G, clearColor.B, 1f); //TODO: take data from the first camera
                 foreach (RenderQueue queue in _queues)
                 {
                     queue.Sort();

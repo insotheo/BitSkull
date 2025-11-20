@@ -1,6 +1,5 @@
 ﻿using BitSkull.Assets;
 using BitSkull.Graphics;
-using BitSkull.Numerics;
 using Silk.NET.OpenGL;
 using System.Numerics;
 
@@ -15,14 +14,14 @@ namespace BitSkull.Platform.OpenGL
 
         public void Configure()
         {
-            //_gl.Enable(GLEnum.DepthTest);
-            //_gl.DepthFunc(GLEnum.Less);
+            _gl.Enable(GLEnum.DepthTest);
+            _gl.DepthFunc(GLEnum.Less);
             _gl.Enable(GLEnum.CullFace);
             _gl.Enable(GLEnum.Blend);
             _gl.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         }
 
-        public void Clear() => _gl.Clear(ClearBufferMask.ColorBufferBit);
+        public void Clear() => _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         public void Clear(float r, float g, float b, float a)
         {
@@ -36,6 +35,10 @@ namespace BitSkull.Platform.OpenGL
 
         public unsafe void Draw(RenderQueue queue)
         {
+            Matrix4x4 viewMatrix = queue.Camera != null ? queue.Camera.GetViewMatrix() : Matrix4x4.Identity;
+            Matrix4x4 projectionMatrix = queue.Camera != null ? queue.Camera.GetProjectionMatrix() : Matrix4x4.Identity;
+            bool cameraInfoSet = false;
+
             Graphics.Shader prevShader = null;
             Material prevMat = null;
             Mesh prevMesh = null;
@@ -61,6 +64,13 @@ namespace BitSkull.Platform.OpenGL
                 {
                     r.Mesh.UsePlatform();
                     prevMesh = r.Mesh;
+                }
+
+                if (!cameraInfoSet)
+                {
+                    prevShader.SetUniform(prevShader.VertexShaderInfo.ViewUniformName, viewMatrix);
+                    prevShader.SetUniform(prevShader.VertexShaderInfo.ProjectionUniformName, projectionMatrix);
+                    cameraInfoSet = true;
                 }
 
                 prevShader.SetUniform(prevShader.VertexShaderInfo.ModelUniformName, r.Transform.GetTransformMatrix());
