@@ -36,14 +36,9 @@ namespace BitSkull.Platform.OpenGL
 
         public unsafe void Draw(RenderQueue queue)
         {
-            queue.Sort();
-
             Graphics.Shader prevShader = null;
             Material prevMat = null;
             Mesh prevMesh = null;
-
-            Transform3D prevTransform = null;
-            Matrix4x4 prevModelMatrix = Matrix4x4.Identity;
 
             foreach (Renderable r in queue)
             {
@@ -68,15 +63,7 @@ namespace BitSkull.Platform.OpenGL
                     prevMesh = r.Mesh;
                 }
 
-                if (r.Transform != prevTransform)
-                {
-                    Matrix4x4 modelMatrix = r.Transform.GetTransformMatrix();
-                    //TEST DEMO!!!
-                    prevShader.SetUniform("u_Model", modelMatrix);
-                    //
-                    prevModelMatrix = modelMatrix;
-                }
-
+                prevShader.SetUniform(prevShader.VertexShaderInfo.ModelUniformName, r.Transform.GetTransformMatrix());
                 _gl.DrawElements(PrimitiveType.Triangles, r.Mesh.GetIndexCount(), DrawElementsType.UnsignedInt, null);
             }
 

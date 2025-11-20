@@ -10,8 +10,14 @@ namespace BitSkull.Graphics
         public IRenderBackend Backend { get; private set; }
         private bool _initialized = false;
 
-        private RenderQueue _queue;
+        private bool _frameActive = false;
+
+        private List<RenderQueue> _queues;
+
+        //GPU resources
         private Dictionary<string, Shader> _shaders;
+        private List<Texture2D> _textures;
+        private List<Mesh> _meshes;
 
         public Renderer(RendererApi api, IRenderBackend backend)
         {
@@ -21,8 +27,12 @@ namespace BitSkull.Graphics
             if (_initialized)
             {
                 Backend.Configure();
-                _queue = new RenderQueue();
+
+                _queues = new List<RenderQueue>();
+
                 _shaders = new Dictionary<string, Shader>();
+                _textures = new List<Texture2D>();
+                _meshes = new List<Mesh>();
             }
         }
 
@@ -33,9 +43,10 @@ namespace BitSkull.Graphics
         public void Clear() => Backend?.Clear();
         public void Clear(float r, float g, float b, float a) => Backend?.Clear(r, g, b, a);
 
+        ////////////////////////////
 
-        #region Generators
-
+        #region Mesh
+        
         public VertexBuffer GenVertexBuffer(float[] vertices)
         {
             if (Backend != null) return Backend.GenVertexBuffer(vertices);
@@ -48,22 +59,26 @@ namespace BitSkull.Graphics
             return null;
         }
 
-        public Texture2D GenTexure2D(Image img)
+        public Mesh CreateMesh(VertexBuffer vbo, IndexBuffer ibo)
         {
-            if (Backend != null) return Backend.GenTexture2D(img);
-            return null;
+            Mesh mesh = new Mesh(vbo, ibo, this);
+            _meshes.Add(mesh);
+            return mesh;
         }
 
         #endregion
 
+        #region Textures
 
-        public void ExecuteRenderQueue()
+        public Texture2D GenTexture2D(Image img)
         {
-            if (!_initialized) return;
-            Backend.Draw(_queue);
+            if (Backend == null) return null;
+            Texture2D texture = Backend.GenTexture2D(img);
+            _textures.Add(texture);
+            return texture;
         }
 
-        ////////////////////////////
+        #endregion
 
         #region Shader Management
 
@@ -75,6 +90,12 @@ namespace BitSkull.Graphics
             if (Backend == null) return;
             Shader shader = Backend.GenShader(vertexShader, fragmentShader, vertexShaderInfo);
             if (!shader.IsValid) return;
+            if (_shaders.ContainsKey(shaderName))
+            {
+                Log.Warn($"Shader '{shaderName}' already exists - replacing", "Shader Manager");
+                _shaders[shaderName].Dispose();
+                _shaders.Remove(shaderName);
+            }
             _shaders.Add(shaderName, shader);
         }
 
@@ -89,28 +110,52 @@ namespace BitSkull.Graphics
 
         #region Queue
 
-        public void InitializeRenderQueue()
+        public void BeginFrame()
         {
-            if (!_initialized) return;
-            _queue = new RenderQueue();
+            if(!_initialized) return;
+            if (_frameActive)
+            {
+                Log.Error("Frame is already activated", "Renderer");
+                return;
+            }
+            _queues.Clear();
+            _frameActive = true;
         }
 
-        public void PushToRenderQueue(string shaderName, Renderable item)
+        public RenderQueue CreateQueue()
         {
-            if (!_initialized) return;
-            _queue.PushRenderable(item);
+            if (!_initialized) return null;
+            if (!_frameActive)
+            {
+                Log.Error("Cannot create queue: frame is not activated", "Renderer");
+                return null;
+            }
+            RenderQueue queue = new RenderQueue();
+            _queues.Add(queue);
+            return queue;
         }
 
-        public void PopFromRenderQueue(Renderable item)
+        public void EndFrame()
         {
-            if (!_initialized) return;
-            _queue.PopRenderable(item);
-        }
-
-        public void BakeRenderQueue()
-        {
-            if (!_initialized) return;
-            _queue.BakeAll(this);
+            if(!_initialized) return;
+            if (!_frameActive)
+            {
+                Log.Error("EndFrame called wihtout matching BeginFrame");
+                return;
+            }
+            if (_queues.Count > 0)
+            {
+                Clear(0.3f, 0.4f, 0.7f, 1f); //TODO: take data from the first camera
+                foreach (RenderQueue queue in _queues)
+                {
+                    queue.Sort();
+                    Backend.Draw(queue);
+                }
+                _queues.Clear();
+            }
+            else
+                Clear(0.15f, 0.15f, 0.15f, 1f);
+            _frameActive = false;
         }
 
         #endregion
@@ -119,7 +164,17 @@ namespace BitSkull.Graphics
         {
             if (_initialized)
             {
-                _queue.DisposeAndClear();
+                foreach (RenderQueue queue in _queues)
+                    queue.Dispose();
+                _queues.Clear();
+
+                foreach (Mesh mesh in _meshes)
+                    mesh.Dispose();
+                _meshes.Clear();
+
+                foreach (Texture2D texture in _textures)
+                    texture.Dispose();
+                _textures.Clear();
 
                 foreach (Shader shader in _shaders.Values)
                     shader.Dispose();

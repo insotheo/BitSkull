@@ -16,6 +16,7 @@ namespace BitSkull.Platform.OpenGL
         private readonly GL _gl;
 
         internal OpenGLShader(GL gl, string vertexSrc, string fragmentSrc, VertexShaderInfo vertexShaderInfo)
+            : base(vertexShaderInfo)
         {
             _gl = gl;
 
@@ -65,7 +66,7 @@ namespace BitSkull.Platform.OpenGL
             _gl.DeleteShader(fragmentShader);
 
             _uniforms = new Dictionary<string, int>();
-            ApplyShaderInfo(vertexShaderInfo);
+            ApplyShaderInfo();
             IsValid = true;
         }
 
@@ -142,19 +143,14 @@ namespace BitSkull.Platform.OpenGL
 
         #endregion
 
-        protected override void ApplyShaderInfo(VertexShaderInfo vertexShaderInfo)
+        protected override void ApplyShaderInfo()
         {
-            if (String.IsNullOrEmpty(vertexShaderInfo.ModelUniformName) ||
-                String.IsNullOrEmpty(vertexShaderInfo.ViewUniformName) ||
-               String.IsNullOrEmpty(vertexShaderInfo.ProjectionUniformName))
-                throw new ArgumentException("VertexShaderInfo contains null or empty uniform names");
-
-            if (GetUniform(vertexShaderInfo.ModelUniformName) == -1)
-                Log.Warn($"Shader compilation warn: required Model uniform('{vertexShaderInfo.ModelUniformName}') not found in shader");
-            if (GetUniform(vertexShaderInfo.ViewUniformName) == -1)
-                Log.Warn($"Shader compilation warn: required View uniform('{vertexShaderInfo.ViewUniformName}') not found in shader");
-            if (GetUniform(vertexShaderInfo.ProjectionUniformName) == -1)
-                Log.Warn($"Shader compilation warn: required Projection uniform('{vertexShaderInfo.ProjectionUniformName}') not found in shader");
+            if (GetUniform(VertexShaderInfo.ModelUniformName) == -1)
+                Log.Warn($"Shader compilation warn: required Model uniform('{VertexShaderInfo.ModelUniformName}') not found in shader");
+            if (GetUniform(VertexShaderInfo.ViewUniformName) == -1)
+                Log.Warn($"Shader compilation warn: required View uniform('{VertexShaderInfo.ViewUniformName}') not found in shader");
+            if (GetUniform(VertexShaderInfo.ProjectionUniformName) == -1)
+                Log.Warn($"Shader compilation warn: required Projection uniform('{VertexShaderInfo.ProjectionUniformName}') not found in shader");
         }
 
     }

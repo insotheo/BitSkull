@@ -19,7 +19,5 @@ namespace BitSkull.Graphics
             Transform = new Transform3D();
             SortKey = (long)material.Shader.ID << 25 | (long)material.ID << 15 | (long)mesh.ID; //recompute if any changes
         }
-
-        internal void Bake(Renderer renderer) => Mesh.Bake(renderer);
     }
 }

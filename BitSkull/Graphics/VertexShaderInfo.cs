@@ -1,6 +1,6 @@
 ﻿namespace BitSkull.Graphics
 {
-    public struct VertexShaderInfo
+    public class VertexShaderInfo
     {
         public string ModelUniformName = "u_Model";
         public string ViewUniformName = "u_View";

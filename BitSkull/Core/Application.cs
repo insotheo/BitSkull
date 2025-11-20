@@ -34,11 +34,11 @@ namespace BitSkull.Core
 
         //DBG
         Renderable square;
+        Renderable triangle;
         //
 
         public void Run()
         {
-            _renderer.InitializeRenderQueue();
             //DBG
             {
                 var square_vbo = _renderer.GenVertexBuffer(new float[]
@@ -57,6 +57,21 @@ namespace BitSkull.Core
                 {
                     0, 1, 2,
                     2, 3, 0
+                });
+
+                var triangle_vbo = _renderer.GenVertexBuffer(new float[]
+                {
+                    //x          y       u       v
+                      0.0f,    0.5f,    0.0f,   1.0f,
+                     -0.5f,   -0.5f,    0.0f,   0.0f,
+                      0.5f,   -0.5f,    1.0f,   0.0f,
+                });
+                triangle_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2), new BufferElement("a_UV", ShaderDataType.Float2)));
+
+
+                var triangle_ibo = _renderer.GenIndexBuffer(new uint[]
+                {
+                    0, 1, 2
                 });
 
                 _renderer.CreateShader("testShader",
@@ -93,17 +108,17 @@ namespace BitSkull.Core
                     new VertexShaderInfo()
                     );
 
-                square = new Renderable(new Mesh(square_vbo, square_ibo, _renderer), new Material(_renderer.GetShader("testShader")));
+                Material mat = new Material(_renderer.GetShader("testShader"));
+                square = new Renderable(_renderer.CreateMesh(square_vbo, square_ibo), mat);
+
+                triangle = new Renderable(_renderer.CreateMesh(triangle_vbo, triangle_ibo), mat);
 
                 Image img = null;
                 using (FileStream logo = File.OpenRead("Assets/logo.png"))
                     img = new Image(logo);
-                square.Material.SaveTextureReference("mainTexture", _renderer.GenTexure2D(img));
+                square.Material.SaveTextureReference("mainTexture", _renderer.GenTexture2D(img));
                 img.Dispose();
                 square.Material.SetTexture("u_Texture", "mainTexture");
-
-                _renderer.PushToRenderQueue("testShader", square);
-                _renderer.BakeRenderQueue();
             }
             //
 
@@ -151,8 +166,15 @@ namespace BitSkull.Core
                 Input.Update();
 
                 //rendering
-                _renderer.Clear(0.3f, 0.5f, 0.78f, 1); //TOOD: camera color
-                _renderer.ExecuteRenderQueue();
+                _renderer.BeginFrame();
+
+                RenderQueue triangleQueue = _renderer.CreateQueue();
+                triangleQueue.PushRenderable(triangle);
+
+                RenderQueue mainQueue = _renderer.CreateQueue();
+                mainQueue.PushRenderable(square);
+
+                _renderer.EndFrame();
             }
 
             dtStopwatch.Stop();

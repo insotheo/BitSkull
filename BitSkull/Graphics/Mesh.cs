@@ -11,7 +11,7 @@ namespace BitSkull.Graphics
         private IndexBuffer _indexBuffer;
         private IPlatformRenderable _platformRenderable;
 
-        public Mesh(VertexBuffer vbo, IndexBuffer ibo, Renderer renderer)
+        internal Mesh(VertexBuffer vbo, IndexBuffer ibo, Renderer renderer)
         {
             ID = _nextID++;
             _vertexBuffer = vbo;
@@ -28,10 +28,5 @@ namespace BitSkull.Graphics
 
         public void UsePlatform() => _platformRenderable.Bind();
         public uint GetIndexCount() => _indexBuffer.GetCount();
-        public void Bake(Renderer renderer)
-        {
-            _platformRenderable?.Dispose();
-            _platformRenderable = renderer.Backend.CreatePlatformRenderable(_vertexBuffer, _indexBuffer);
-        }
     }
 }

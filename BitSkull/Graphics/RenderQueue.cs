@@ -5,10 +5,12 @@ namespace BitSkull.Graphics
 {
     public class RenderQueue : IEnumerable
     {
+        //Camera will be here...
+        //Target's reference will be here...
         private List<Renderable> _renderables;
         private bool _isSorted;
 
-        public RenderQueue()
+        internal RenderQueue()
         {
             _renderables = new List<Renderable>();
             _isSorted = true;
@@ -20,12 +22,7 @@ namespace BitSkull.Graphics
             _isSorted = false;
         }
 
-        public void PopRenderable(Renderable renderable)
-        {
-            _renderables.Remove(renderable);
-        }
-
-        public void Sort()
+        internal void Sort()
         {
             if (_isSorted) return;
 
@@ -33,19 +30,7 @@ namespace BitSkull.Graphics
             _isSorted = true;
         }
 
-        public void BakeAll(Renderer renderer)
-        {
-            foreach (Renderable renderable in _renderables)
-                renderable.Bake(renderer);
-        }
-
-        public void DisposeAndClear()
-        {
-            foreach (Renderable renderable in _renderables)
-                renderable.Mesh.Dispose();
-            Clear();
-        }
-        public void Clear()
+        internal void Dispose()
         {
             _renderables.Clear();
             _isSorted = true;
