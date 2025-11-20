@@ -33,27 +33,29 @@ namespace BitSkull.Graphics
         public void Clear() => Backend?.Clear();
         public void Clear(float r, float g, float b, float a) => Backend?.Clear(r, g, b, a);
 
+
         #region Generators
 
         public VertexBuffer GenVertexBuffer(float[] vertices)
         {
-            if(Backend != null) return Backend.GenVertexBuffer(vertices);
+            if (Backend != null) return Backend.GenVertexBuffer(vertices);
             return null;
         }
 
         public IndexBuffer GenIndexBuffer(uint[] indices)
         {
-            if(Backend != null) return Backend.GenIndexBuffer(indices);
+            if (Backend != null) return Backend.GenIndexBuffer(indices);
             return null;
         }
 
         public Texture2D GenTexure2D(Image img)
         {
-            if(Backend != null) return Backend.GenTexture2D(img);
+            if (Backend != null) return Backend.GenTexture2D(img);
             return null;
         }
 
         #endregion
+
 
         public void ExecuteRenderQueue()
         {
@@ -68,10 +70,12 @@ namespace BitSkull.Graphics
         /// <summary>
         /// For OpenGL vertexShader and fragmentShader should be sources
         /// </summary>
-        public void CreateShader(string shaderName, string vertexShader, string fragmentShader)
+        public void CreateShader(string shaderName, string vertexShader, string fragmentShader, VertexShaderInfo vertexShaderInfo)
         {
             if (Backend == null) return;
-            _shaders.Add(shaderName, Backend.GenShader(_shaders.Count, vertexShader, fragmentShader));
+            Shader shader = Backend.GenShader(vertexShader, fragmentShader, vertexShaderInfo);
+            if (!shader.IsValid) return;
+            _shaders.Add(shaderName, shader);
         }
 
         public Shader GetShader(string shaderName)
@@ -108,19 +112,15 @@ namespace BitSkull.Graphics
             if (!_initialized) return;
             _queue.BakeAll(this);
         }
+
         #endregion
-
-
-        public void DisposeRenderQueue()
-        {
-            if(!_initialized) return;
-            _queue.DisposeAndClear();
-        }
 
         public void Dispose()
         {
             if (_initialized)
             {
+                _queue.DisposeAndClear();
+
                 foreach (Shader shader in _shaders.Values)
                     shader.Dispose();
                 _shaders.Clear();

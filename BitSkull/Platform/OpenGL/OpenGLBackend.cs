@@ -1,6 +1,8 @@
 ﻿using BitSkull.Assets;
 using BitSkull.Graphics;
+using BitSkull.Numerics;
 using Silk.NET.OpenGL;
+using System.Numerics;
 
 namespace BitSkull.Platform.OpenGL
 {
@@ -14,8 +16,8 @@ namespace BitSkull.Platform.OpenGL
         public void Configure()
         {
             //_gl.Enable(GLEnum.DepthTest);
-            //_gl.Enable(GLEnum.CullFace);
             //_gl.DepthFunc(GLEnum.Less);
+            _gl.Enable(GLEnum.CullFace);
             _gl.Enable(GLEnum.Blend);
             _gl.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         }
@@ -40,12 +42,15 @@ namespace BitSkull.Platform.OpenGL
             Material prevMat = null;
             Mesh prevMesh = null;
 
-            foreach(Renderable r in queue)
+            Transform3D prevTransform = null;
+            Matrix4x4 prevModelMatrix = Matrix4x4.Identity;
+
+            foreach (Renderable r in queue)
             {
                 if (!r.IsValid)
                     continue;
 
-                if(r.Material.Shader != prevShader)
+                if (r.Material.Shader != prevShader)
                 {
                     r.Material.Shader.Use();
                     prevShader = r.Material.Shader;
@@ -57,10 +62,19 @@ namespace BitSkull.Platform.OpenGL
                     prevMat = r.Material;
                 }
 
-                if(prevMesh != r.Mesh)
+                if (prevMesh != r.Mesh)
                 {
                     r.Mesh.UsePlatform();
                     prevMesh = r.Mesh;
+                }
+
+                if (r.Transform != prevTransform)
+                {
+                    Matrix4x4 modelMatrix = r.Transform.GetTransformMatrix();
+                    //TEST DEMO!!!
+                    prevShader.SetUniform("u_Model", modelMatrix);
+                    //
+                    prevModelMatrix = modelMatrix;
                 }
 
                 _gl.DrawElements(PrimitiveType.Triangles, r.Mesh.GetIndexCount(), DrawElementsType.UnsignedInt, null);
@@ -72,7 +86,7 @@ namespace BitSkull.Platform.OpenGL
 
         public VertexBuffer GenVertexBuffer(float[] vertices) => new OpenGLVertexBuffer(_gl, vertices);
         public IndexBuffer GenIndexBuffer(uint[] indices) => new OpenGLIndexBuffer(_gl, indices);
-        public Graphics.Shader GenShader(int id, string vertexShader, string fragmentShader) => new OpenGLShader(_gl, id, vertexShader, fragmentShader);
+        public Graphics.Shader GenShader(string vertexShader, string fragmentShader, VertexShaderInfo vertexShaderInfo) => new OpenGLShader(_gl, vertexShader, fragmentShader, vertexShaderInfo);
         public Texture2D GenTexture2D(Image image) => new OpenGLTexture2D(_gl, image);
     }
 }

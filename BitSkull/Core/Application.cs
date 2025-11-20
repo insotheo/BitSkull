@@ -43,11 +43,11 @@ namespace BitSkull.Core
             {
                 var square_vbo = _renderer.GenVertexBuffer(new float[]
                 {
-                    //x          y          u       v
-                     -0.75f,    0.75f,    0.0f,   1.0f,
-                     -0.75f,   -0.75f,    0.0f,   0.0f,
-                      0.75f,   -0.75f,    1.0f,   0.0f,
-                      0.75f,    0.75f,    1.0f,   1.0f,
+                    //x          y       u       v
+                     -0.5f,    0.5f,    0.0f,   1.0f,
+                     -0.5f,   -0.5f,    0.0f,   0.0f,
+                      0.5f,   -0.5f,    1.0f,   0.0f,
+                      0.5f,    0.5f,    1.0f,   1.0f,
                 });
 
                 square_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2), new BufferElement("a_UV", ShaderDataType.Float2)));
@@ -68,9 +68,13 @@ namespace BitSkull.Core
 
                     out vec2 v_UV;
 
+                    uniform mat4 u_Model;
+                    uniform mat4 u_View;
+                    uniform mat4 u_Projection;
+
                     void main(){
                         v_UV = vec2(a_UV.x, -a_UV.y);
-                        gl_Position = vec4(a_Pos, 0.0, 1.0);
+                        gl_Position = u_Model * vec4(a_Pos, 0.0, 1.0);
                     }
                     """,
                     """
@@ -85,7 +89,8 @@ namespace BitSkull.Core
                     void main(){
                         frag_color = texture(u_Texture, v_UV);
                     }
-                    """
+                    """,
+                    new VertexShaderInfo()
                     );
 
                 square = new Renderable(new Mesh(square_vbo, square_ibo, _renderer), new Material(_renderer.GetShader("testShader")));
@@ -118,6 +123,27 @@ namespace BitSkull.Core
                 prevTime = currTime;
 
                 //update
+
+                //DBG
+                if (Input.IsKeyDown(KeyCode.W))
+                    square.Transform.Position.Y += 1f * dt;
+                if (Input.IsKeyDown(KeyCode.S))
+                    square.Transform.Position.Y -= 1f * dt;
+                if (Input.IsKeyDown(KeyCode.D))
+                    square.Transform.Position.X += 1f * dt;
+                if (Input.IsKeyDown(KeyCode.A))
+                    square.Transform.Position.X -= 1f * dt;
+                if(Input.IsKeyDown(KeyCode.Z))
+                    square.Transform.Position.Z += 1f * dt;
+                if (Input.IsKeyDown(KeyCode.X))
+                    square.Transform.Position.Z -= 1f * dt;
+
+                if (Input.IsKeyDown(KeyCode.Q))
+                    square.Transform.Rotation.Z += Maths.DegToRad(90f) * dt;
+                if (Input.IsKeyDown(KeyCode.E))
+                    square.Transform.Rotation.Z -= Maths.DegToRad(90f) * dt;
+                //
+
                 if (_window != null)
                     _window.DoUpdate(dt);
                 foreach (Layer layer in _layerStack)
@@ -132,10 +158,7 @@ namespace BitSkull.Core
             dtStopwatch.Stop();
 
             if (_renderer != null)
-            {
-                _renderer.DisposeRenderQueue();
                 _renderer.Dispose();
-            }
             if (_window != null)
             {
                 _window.Dispose();

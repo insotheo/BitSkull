@@ -24,7 +24,7 @@ namespace BitSkull.Graphics
         public float Value { get; set; }
 
         public UniformFloat(float value) => Value = value;
-     
+
         public void Apply(Shader shader, string uniformName) => shader.SetUniform(uniformName, Value);
         public void SetValue(object value) => Value = (float)value;
     }
@@ -33,7 +33,7 @@ namespace BitSkull.Graphics
     {
         public double Value { get; set; }
         public UniformDouble(double value) => Value = value;
-        
+
         public void Apply(Shader shader, string uniformName) => shader.SetUniform(uniformName, Value);
         public void SetValue(object value) => Value = (double)value;
     }
@@ -41,9 +41,9 @@ namespace BitSkull.Graphics
     public class UniformVec2D : IUniformValue
     {
         public Vec2D Value { get; set; }
-     
+
         public UniformVec2D(Vec2D value) => Value = value;
-        
+
         public void Apply(Shader shader, string uniformName) => shader.SetUniform(uniformName, Value);
         public void SetValue(object value) => Value = (Vec2D)value;
     }
@@ -51,9 +51,9 @@ namespace BitSkull.Graphics
     public class UniformVec3D : IUniformValue
     {
         public Vec3D Value { get; set; }
-        
+
         public UniformVec3D(Vec3D value) => Value = value;
-        
+
         public void Apply(Shader shader, string uniformName) => shader.SetUniform(uniformName, Value);
         public void SetValue(object value) => Value = (Vec3D)value;
     }
@@ -61,9 +61,9 @@ namespace BitSkull.Graphics
     public class UniformColor4 : IUniformValue
     {
         public Color4 Value { get; set; }
-        
+
         public UniformColor4(Color4 value) => Value = value;
-        
+
         public void Apply(Shader shader, string uniformName) => shader.SetUniform(uniformName, Value);
         public void SetValue(object value) => Value = (Color4)value;
     }
@@ -71,9 +71,9 @@ namespace BitSkull.Graphics
     public class UniformMat4 : IUniformValue
     {
         public Matrix4x4 Value { get; set; }
-        
+
         public UniformMat4(Matrix4x4 value) => Value = value;
-        
+
         public void Apply(Shader shader, string uniformName) => shader.SetUniform(uniformName, Value);
         public void SetValue(object value) => Value = (Matrix4x4)value;
     }
@@ -84,7 +84,7 @@ namespace BitSkull.Graphics
         public int Slot { get; set; } = 0;
 
         public UniformTexture2D(Texture2D value) => Value = value;
-        
+
         public void Apply(Shader shader, string uniformName) => shader.SetUniform(uniformName, Value);
         public void SetValue(object value) => Value = (Texture2D)value;
     }

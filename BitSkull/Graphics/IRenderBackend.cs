@@ -16,9 +16,10 @@ namespace BitSkull.Graphics
 
         void Draw(RenderQueue queue);
 
+
         VertexBuffer GenVertexBuffer(float[] vertices);
         IndexBuffer GenIndexBuffer(uint[] indices);
-        Shader GenShader(int id, string vertexShader, string fragmentShader);
+        Shader GenShader(string vertexShader, string fragmentShader, VertexShaderInfo vertexShaderInfo);
         Texture2D GenTexture2D(Image image);
     }
 }

@@ -27,7 +27,7 @@ namespace BitSkull.Graphics
 
         public void Sort()
         {
-            if(_isSorted) return;
+            if (_isSorted) return;
 
             _renderables.Sort((a, b) => a.SortKey.CompareTo(b.SortKey));
             _isSorted = true;
@@ -35,7 +35,7 @@ namespace BitSkull.Graphics
 
         public void BakeAll(Renderer renderer)
         {
-            foreach(Renderable renderable in _renderables)
+            foreach (Renderable renderable in _renderables)
                 renderable.Bake(renderer);
         }
 

@@ -18,7 +18,7 @@ namespace BitSkull.Platform.OpenGL
             _gl.ActiveTexture(GLEnum.Texture0);
             Bind();
 
-            fixed(byte* ptr = img.GetData())
+            fixed (byte* ptr = img.GetData())
                 _gl.TexImage2D(GLEnum.Texture2D, 0, InternalFormat.Rgba, (uint)img.Width, (uint)img.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
 
             _gl.TextureParameter(_texture, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);

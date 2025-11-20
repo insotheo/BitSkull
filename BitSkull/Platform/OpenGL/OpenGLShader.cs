@@ -1,4 +1,5 @@
-﻿using BitSkull.Numerics;
+﻿using BitSkull.Graphics;
+using BitSkull.Numerics;
 using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace BitSkull.Platform.OpenGL
 
         private readonly GL _gl;
 
-        internal OpenGLShader(GL gl, int id, string vertexSrc, string fragmentSrc)
+        internal OpenGLShader(GL gl, string vertexSrc, string fragmentSrc, VertexShaderInfo vertexShaderInfo)
         {
             _gl = gl;
 
@@ -64,6 +65,8 @@ namespace BitSkull.Platform.OpenGL
             _gl.DeleteShader(fragmentShader);
 
             _uniforms = new Dictionary<string, int>();
+            ApplyShaderInfo(vertexShaderInfo);
+            IsValid = true;
         }
 
         public override void Use() => _gl.UseProgram(_program);
@@ -78,30 +81,81 @@ namespace BitSkull.Platform.OpenGL
                 return _uniforms[name];
 
             int loc = _gl.GetUniformLocation(_program, name);
+            if (loc == -1)
+                Log.Warn($"Uniform '{name}' not found in shader!");
             _uniforms.Add(name, loc);
             return loc;
         }
 
 
-        public override void SetUniform(string name, int value) => _gl.Uniform1(GetUniform(name), value);
-        public override void SetUniform(string name, float value) => _gl.Uniform1(GetUniform(name), value);
-        public override void SetUniform(string name, double value) => _gl.Uniform1(GetUniform(name), value);
-        public override void SetUniform(string name, Vec2D value) => _gl.Uniform2(GetUniform(name), value.X, value.Y);
-        public override void SetUniform(string name, Vec3D value) => _gl.Uniform3(GetUniform(name), value.X, value.Y, value.Z);
-        public override void SetUniform(string name, Color4 value) => _gl.Uniform4(GetUniform(name), value.R, value.G, value.B, value.A);
+        public override void SetUniform(string name, int value)
+        {
+            int loc = GetUniform(name);
+            if (loc == -1) return;
+            _gl.Uniform1(GetUniform(name), value);
+        }
+        public override void SetUniform(string name, float value)
+        {
+            int loc = GetUniform(name);
+            if (loc == -1) return;
+            _gl.Uniform1(GetUniform(name), value);
+        }
+        public override void SetUniform(string name, double value)
+        {
+            int loc = GetUniform(name);
+            if (loc == -1) return;
+            _gl.Uniform1(GetUniform(name), value);
+        }
+        public override void SetUniform(string name, Vec2D value)
+        {
+            int loc = GetUniform(name);
+            if (loc == -1) return;
+            _gl.Uniform2(GetUniform(name), value.X, value.Y);
+        }
+        public override void SetUniform(string name, Vec3D value)
+        {
+            int loc = GetUniform(name);
+            if (loc == -1) return;
+            _gl.Uniform3(GetUniform(name), value.X, value.Y, value.Z);
+        }
+        public override void SetUniform(string name, Color4 value)
+        {
+            int loc = GetUniform(name);
+            if (loc == -1) return;
+            _gl.Uniform4(GetUniform(name), value.R, value.G, value.B, value.A);
+        }
         public unsafe override void SetUniform(string name, Matrix4x4 value)
         {
             int loc = GetUniform(name);
+            if (loc == -1) return;
             _gl.UniformMatrix4(loc, 1, false, (float*)&value);
         }
-        public override void SetUniform(string name, Graphics.Texture2D texture, int slot = 0)
+        public override void SetUniform(string name, Texture2D texture, int slot = 0)
         {
+            int loc = GetUniform(name);
+            if (loc == -1) return;
             OpenGLTexture2D glTexture = texture as OpenGLTexture2D;
             _gl.ActiveTexture(GLEnum.Texture0 + slot);
             glTexture.Bind();
-            _gl.Uniform1(GetUniform(name), slot);
+            _gl.Uniform1(loc, slot);
         }
 
         #endregion
+
+        protected override void ApplyShaderInfo(VertexShaderInfo vertexShaderInfo)
+        {
+            if (String.IsNullOrEmpty(vertexShaderInfo.ModelUniformName) ||
+                String.IsNullOrEmpty(vertexShaderInfo.ViewUniformName) ||
+               String.IsNullOrEmpty(vertexShaderInfo.ProjectionUniformName))
+                throw new ArgumentException("VertexShaderInfo contains null or empty uniform names");
+
+            if (GetUniform(vertexShaderInfo.ModelUniformName) == -1)
+                Log.Warn($"Shader compilation warn: required Model uniform('{vertexShaderInfo.ModelUniformName}') not found in shader");
+            if (GetUniform(vertexShaderInfo.ViewUniformName) == -1)
+                Log.Warn($"Shader compilation warn: required View uniform('{vertexShaderInfo.ViewUniformName}') not found in shader");
+            if (GetUniform(vertexShaderInfo.ProjectionUniformName) == -1)
+                Log.Warn($"Shader compilation warn: required Projection uniform('{vertexShaderInfo.ProjectionUniformName}') not found in shader");
+        }
+
     }
 }

@@ -4,22 +4,22 @@ using System.Numerics;
 
 namespace BitSkull.Graphics
 {
-    public class Shader : IDisposable
+    public abstract class Shader : IDisposable
     {
         private static int _nextID = 0;
         public int ID { get; private set; }
+
+        public bool IsValid { get; protected set; } = false;
 
         protected Shader()
         {
             ID = _nextID++;
         }
+        protected abstract void ApplyShaderInfo(VertexShaderInfo vertexShaderInfo);
 
         public virtual void Use() { }
         public virtual void ZeroUse() { }
         public virtual void Dispose() { }
-
-        public virtual int GetGPUHandle() { return -1; }
-
 
         #region Uniforms
 
