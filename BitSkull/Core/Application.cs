@@ -124,7 +124,9 @@ namespace BitSkull.Core
 
                 square.Transform.Position.Z = 1f;
 
-                cam = new Camera(CameraType.Orthographic);
+                cam = new Camera(CameraType.Perspective);
+                cam.ClearColor = new Color4(0.3f, 0.5f, 0.9f);
+                //cam.Zoom = 3.5f;
             }
             //
 
@@ -154,24 +156,24 @@ namespace BitSkull.Core
                     square.Transform.Position.X += 1f * dt;
                 if (Input.IsKeyDown(KeyCode.A))
                     square.Transform.Position.X -= 1f * dt;
-                if(Input.IsKeyDown(KeyCode.Z))
-                    square.Transform.Position.Z += 1f * dt;
-                if (Input.IsKeyDown(KeyCode.X))
-                    square.Transform.Position.Z -= 1f * dt;
 
                 if (Input.IsKeyDown(KeyCode.Q))
-                    square.Transform.Rotation.Z += Maths.DegToRad(90f) * dt;
+                    square.Transform.Rotation.X += Maths.DegToRad(90f) * dt;
                 if (Input.IsKeyDown(KeyCode.E))
-                    square.Transform.Rotation.Z -= Maths.DegToRad(90f) * dt;
+                    square.Transform.Rotation.X -= Maths.DegToRad(90f) * dt;
 
                 if (Input.IsKeyDown(KeyCode.Up))
-                    cam.Transform.Position.Y += 1f * dt;
+                    cam.Position.Y += 1f * dt;
                 if (Input.IsKeyDown(KeyCode.Down))
-                    cam.Transform.Position.Y -= 1f * dt;
+                    cam.Position.Y -= 1f * dt;
                 if (Input.IsKeyDown(KeyCode.Right))
-                    cam.Transform.Position.X += 1f * dt;
+                    cam.Position.X += 1f * dt;
                 if (Input.IsKeyDown(KeyCode.Left))
-                    cam.Transform.Position.X -= 1f * dt;
+                    cam.Position.X -= 1f * dt;
+                if (Input.IsKeyDown(KeyCode.Z))
+                    cam.Position.Z += 1f * dt;
+                if (Input.IsKeyDown(KeyCode.X))
+                    cam.Position.Z -= 1f * dt;
                 //
 
                 if (_window != null)

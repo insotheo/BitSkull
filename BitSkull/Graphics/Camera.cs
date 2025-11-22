@@ -9,11 +9,16 @@ namespace BitSkull.Graphics
     public sealed class Camera
     {
         public CameraType Type { get; set; }
-        public Transform3D Transform { get; private set; } = new Transform3D();
-        public Color4 ClearColor { get; set; } = new Color4(0.15f, 0.15f, 0.15f);
 
-        public float Near { get; set; } = 0.1f;
-        public float Far { get; set; } = 100f;
+        public Vec3D Position = Vec3D.Zero;
+        public Vec3D Rotation = Vec3D.Zero;
+        public Vec2D Scale = new Vec2D(1f, 1f);
+
+        public Vec3D Up = Vec3D.UnitY;
+        public Vec3D Front = new Vec3D(0f, 0f, -1f);
+        public Vec3D Direction = Vec3D.Zero;
+
+        public Color4 ClearColor = new Color4(0.15f, 0.15f, 0.15f);
 
         public float _fov = 60f;
         public float FOV //for 3D
@@ -21,12 +26,19 @@ namespace BitSkull.Graphics
             get => _fov;
             set => _fov = Maths.Clamp(value, 0.1f, 179.9f);
         }
+        public float Zoom
+        {
+            get => _fov;
+            set => _fov = value;
+        }
 
-        public float Zoom { get; set; } = 3f; //how many world units feet vertically; for 2D
+        public float Near = 0.1f;
+        public float Far = 100f;
 
         public Camera(CameraType type)
         {
             Type = type;
+            _fov = type == CameraType.Orthographic ? 2f : 60f;
         }
 
         public Matrix4x4 GetProjectionMatrix()
@@ -48,16 +60,13 @@ namespace BitSkull.Graphics
         {
             if (Type == CameraType.Orthographic)
             {
-                Matrix4x4 rot = Matrix4x4.CreateFromYawPitchRoll(Transform.Rotation.Y, Transform.Rotation.X, Transform.Rotation.Z);
-                Matrix4x4 trans = Matrix4x4.CreateTranslation(-Transform.Position.X, -Transform.Position.Y, -Transform.Position.Z);
+                Matrix4x4 rot = Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
+                Matrix4x4 trans = Matrix4x4.CreateTranslation(-Position.X, -Position.Y, -Position.Z);
                 return rot * trans;
             }
             else //perspective
             {
-                Matrix4x4 rot = Matrix4x4.CreateRotationZ(-Transform.Rotation.Z);
-                Matrix4x4 trans = Matrix4x4.CreateTranslation(-Transform.Position.X, -Transform.Position.Y, 0f);
-                Matrix4x4 scale = Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f);
-                return scale * rot * trans;
+                return Matrix4x4.CreateLookAt(Position.ToSystem(), (Position + Front).ToSystem(), Up.ToSystem());
             }
         }
     }
