@@ -10,14 +10,16 @@ namespace BitSkull.Graphics
         internal Material Material { get; private set; }
         internal Transform3D Transform { get; private set; }
 
-        internal bool IsValid => Mesh != null && Material != null && Material?.Shader != null;
+        internal bool IsValid => Mesh != null && Mesh.IsValid && Material != null && Material?.Shader != null;
 
         public Renderable(Mesh mesh, Material material)
         {
             Mesh = mesh;
             Material = material;
             Transform = new Transform3D();
-            SortKey = (long)material.Shader.ID << 25 | (long)material.ID << 15 | (long)mesh.ID; //recompute if any changes
+            ComputeSortKey();
         }
+
+        private void ComputeSortKey() => SortKey = (long)Material.Shader.ID << 25 | (long)Material.ID << 15 | (long)Mesh.ID; //recompute if any changes;
     }
 }

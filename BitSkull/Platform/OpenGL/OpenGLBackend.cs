@@ -85,5 +85,28 @@ namespace BitSkull.Platform.OpenGL
         public IndexBuffer GenIndexBuffer(uint[] indices) => new OpenGLIndexBuffer(_gl, indices);
         public Graphics.Shader GenShader(string vertexShader, string fragmentShader, VertexShaderInfo vertexShaderInfo) => new OpenGLShader(_gl, vertexShader, fragmentShader, vertexShaderInfo);
         public Texture2D GenTexture2D(Image image) => new OpenGLTexture2D(_gl, image);
+
+        public unsafe Texture2D GenFontTexture2D(Font font)
+        {
+            uint fontTexture = _gl.GenTexture();
+            _gl.BindTexture(TextureTarget.Texture2D, fontTexture);
+            fixed(byte* ptr = font.Atlas)
+            {
+                _gl.TexImage2D(
+                    TextureTarget.Texture2D,
+                    0,
+                    InternalFormat.R8,
+                    Font.AtlasSize, Font.AtlasSize,
+                    0,
+                    PixelFormat.Red,
+                    PixelType.UnsignedByte,
+                    ptr
+                    );
+            }
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            _gl.BindTexture(TextureTarget.Texture2D, 0);
+            return new OpenGLTexture2D(_gl, fontTexture);
+        }
     }
 }

@@ -79,6 +79,14 @@ namespace BitSkull.Graphics
             return texture;
         }
 
+        public void GenFontTexture(Font font)
+        {
+            if (Backend == null) return;
+            Texture2D fontTexture = Backend.GenFontTexture2D(font);
+            font.SetFontTexture(fontTexture);
+            _textures.Add(fontTexture);
+        }
+
         #endregion
 
         #region Shader Management

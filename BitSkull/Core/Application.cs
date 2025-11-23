@@ -4,6 +4,7 @@ using BitSkull.Graphics;
 using BitSkull.InputSystem;
 using BitSkull.Numerics;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -33,102 +34,69 @@ namespace BitSkull.Core
 
         public (int width, int height) GetWindowSize() => (_window.Width, _window.Height);
 
-        //DBG
-        Renderable square;
-        Renderable triangle;
         Camera cam;
-        //
+        Font font;
 
         public void Run()
         {
-            //DBG
-            {
-                var square_vbo = _renderer.GenVertexBuffer(new float[]
-                {
-                    //x          y       u       v
-                     -0.5f,    0.5f,    0.0f,   1.0f,
-                     -0.5f,   -0.5f,    0.0f,   0.0f,
-                      0.5f,   -0.5f,    1.0f,   0.0f,
-                      0.5f,    0.5f,    1.0f,   1.0f,
-                });
+            using (FileStream fs = File.OpenRead("Assets/Roboto.ttf"))
+                font = new Font(fs, 64);
+            _renderer.GenFontTexture(font);
 
-                square_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2), new BufferElement("a_UV", ShaderDataType.Float2)));
-                square_vbo.Unbind();
+            _renderer.CreateShader("textDefaultShader",
+                """
+                #version 330 core
 
-                var square_ibo = _renderer.GenIndexBuffer(new uint[]
-                {
-                    0, 1, 2,
-                    2, 3, 0
-                });
+                layout(location = 0) in vec3 a_Pos;
+                layout(location = 1) in vec2 a_UV;
 
-                var triangle_vbo = _renderer.GenVertexBuffer(new float[]
-                {
-                    //x          y       u       v
-                      0.0f,    0.5f,    0.0f,   1.0f,
-                     -0.5f,   -0.5f,    0.0f,   0.0f,
-                      0.5f,   -0.5f,    1.0f,   0.0f,
-                });
-                triangle_vbo.SetLayout(new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float2), new BufferElement("a_UV", ShaderDataType.Float2)));
+                out vec2 v_UV;
+                
+                uniform mat4 u_Model;
+                uniform mat4 u_View;
+                uniform mat4 u_Projection;
 
+                void main(){
+                    v_UV = vec2(a_UV.x, a_UV.y);
+                    gl_Position = u_Projection * u_View * u_Model * vec4(a_Pos, 1.0);
+                }
+                """,
+                """
+                #version 330 core
 
-                var triangle_ibo = _renderer.GenIndexBuffer(new uint[]
-                {
-                    0, 1, 2
-                });
+                in vec2 v_UV;
 
-                _renderer.CreateShader("testShader",
-                    """
-                    #version 330 core
+                out vec4 frag_Color;
 
-                    layout(location = 0) in vec2 a_Pos;
-                    layout(location = 1) in vec2 a_UV;
+                uniform sampler2D u_FontTexture;
+                uniform vec4 u_Color;
 
-                    out vec2 v_UV;
+                void main(){
+                    float alpha = texture(u_FontTexture, v_UV).r;
+                    frag_Color = vec4(u_Color.rgb, alpha);
+                    //frag_Color = vec4(u_Color.rgb, 1.0);
+                }
+                """,
+                new VertexShaderInfo()
+            );
 
-                    uniform mat4 u_Model;
-                    uniform mat4 u_View;
-                    uniform mat4 u_Projection;
+            Text text = new Text(_renderer, 
+                new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float3), new BufferElement("a_UV", ShaderDataType.Float2)), 
+                new Renderable(new Mesh(null, null, _renderer), new Material(_renderer.GetShader("textDefaultShader"))), 
+                font, 
+                content: $"Hello, {Environment.UserName}!",
+                nativeScale: 100f);
+            Color4 textColor = new Color4(1f, 1f, 1f);
 
-                    void main(){
-                        v_UV = vec2(a_UV.x, -a_UV.y);
-                        gl_Position = u_Projection * u_View *  u_Model * vec4(a_Pos, 0.0, 1.0);
-                    }
-                    """,
-                    """
-                    #version 330 core
+            text.Renderable.Material.SetTexture("u_FontTexture", font.FontTexture);
+            text.Renderable.Material.SetColor("u_Color", textColor);
+            text.Renderable.Transform.Rotation.Y = Maths.DegToRad(45f);
+            text.Renderable.Transform.Rotation.X = Maths.DegToRad(-30f);
+            int counter = 0;
 
-                    layout(location = 0) out vec4 frag_color;
-
-                    in vec2 v_UV;
-
-                    uniform sampler2D u_Texture;
-
-                    void main(){
-                        frag_color = texture(u_Texture, v_UV);
-                    }
-                    """,
-                    new VertexShaderInfo()
-                    );
-
-                Material mat = new Material(_renderer.GetShader("testShader"));
-                square = new Renderable(_renderer.CreateMesh(square_vbo, square_ibo), mat);
-
-                triangle = new Renderable(_renderer.CreateMesh(triangle_vbo, triangle_ibo), mat);
-
-                Image img = null;
-                using (FileStream logo = File.OpenRead("Assets/logo.png"))
-                    img = new Image(logo);
-                square.Material.SaveTextureReference("mainTexture", _renderer.GenTexture2D(img));
-                img.Dispose();
-                square.Material.SetTexture("u_Texture", "mainTexture");
-
-                square.Transform.Position.Z = 1f;
-
-                cam = new Camera(CameraType.Perspective);
-                cam.ClearColor = new Color4(0.3f, 0.5f, 0.9f);
-                //cam.Zoom = 3.5f;
-            }
-            //
+            Log.Info("Hold [R] for magic");
+            cam = new Camera(CameraType.Perspective);
+            cam.Position.Z = 1.5f;
 
             IsRunning = true;
             if (_window != null)
@@ -146,35 +114,29 @@ namespace BitSkull.Core
                 prevTime = currTime;
 
                 //update
-
-                //DBG
                 if (Input.IsKeyDown(KeyCode.W))
-                    square.Transform.Position.Y += 1f * dt;
+                    cam.Position.Y += 2f * dt;
                 if (Input.IsKeyDown(KeyCode.S))
-                    square.Transform.Position.Y -= 1f * dt;
+                    cam.Position.Y -= 2f * dt;
                 if (Input.IsKeyDown(KeyCode.D))
-                    square.Transform.Position.X += 1f * dt;
+                    cam.Position.X += 2f * dt;
                 if (Input.IsKeyDown(KeyCode.A))
-                    square.Transform.Position.X -= 1f * dt;
-
-                if (Input.IsKeyDown(KeyCode.Q))
-                    square.Transform.Rotation.X += Maths.DegToRad(90f) * dt;
-                if (Input.IsKeyDown(KeyCode.E))
-                    square.Transform.Rotation.X -= Maths.DegToRad(90f) * dt;
-
-                if (Input.IsKeyDown(KeyCode.Up))
-                    cam.Position.Y += 1f * dt;
-                if (Input.IsKeyDown(KeyCode.Down))
-                    cam.Position.Y -= 1f * dt;
-                if (Input.IsKeyDown(KeyCode.Right))
-                    cam.Position.X += 1f * dt;
-                if (Input.IsKeyDown(KeyCode.Left))
-                    cam.Position.X -= 1f * dt;
+                    cam.Position.X -= 2f * dt;
                 if (Input.IsKeyDown(KeyCode.Z))
-                    cam.Position.Z += 1f * dt;
+                    cam.Position.Z += 2f * dt;
                 if (Input.IsKeyDown(KeyCode.X))
-                    cam.Position.Z -= 1f * dt;
-                //
+                    cam.Position.Z -= 2f * dt;
+
+                if (Input.IsKeyDown(KeyCode.R))
+                {
+                    counter += 1;
+                    textColor.R = (MathF.Sin(counter/10f * 0.8f) + 1f) * 0.5f;
+                    textColor.G = (MathF.Sin(counter/10f * 1.5f + 2f) + 1f) * 0.5f;
+                    textColor.B = (MathF.Sin(counter/10f * 1.1f + 4f) + 1f) * 0.5f;
+                    Log.Trace($"Score: {counter}");
+                    text.SetContent($"Score: {counter}");
+                    text.Renderable.Material.SetColor("u_Color", textColor);
+                }
 
                 if (_window != null)
                     _window.DoUpdate(dt);
@@ -184,15 +146,10 @@ namespace BitSkull.Core
 
                 //rendering
                 _renderer.BeginFrame();
-
                 RenderQueue mainQueue = _renderer.CreateQueue();
-                mainQueue.PushRenderable(square);
-
-                RenderQueue triangleQueue = _renderer.CreateQueue();
-                triangleQueue.PushRenderable(triangle);
-
                 mainQueue.SetCamera(cam);
-                triangleQueue.SetCamera(cam);
+
+                mainQueue.PushText(text);
 
                 _renderer.EndFrame();
             }

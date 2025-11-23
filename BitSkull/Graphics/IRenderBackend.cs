@@ -21,5 +21,6 @@ namespace BitSkull.Graphics
         IndexBuffer GenIndexBuffer(uint[] indices);
         Shader GenShader(string vertexShader, string fragmentShader, VertexShaderInfo vertexShaderInfo);
         Texture2D GenTexture2D(Image image);
+        Texture2D GenFontTexture2D(Font font);
     }
 }

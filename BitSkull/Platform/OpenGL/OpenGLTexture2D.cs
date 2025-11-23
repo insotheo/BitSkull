@@ -10,7 +10,7 @@ namespace BitSkull.Platform.OpenGL
 
         private readonly GL _gl;
 
-        public unsafe OpenGLTexture2D(GL gl, Image img)
+        internal unsafe OpenGLTexture2D(GL gl, Image img)
         {
             _gl = gl;
 
@@ -31,6 +31,12 @@ namespace BitSkull.Platform.OpenGL
             _gl.GenerateMipmap(GLEnum.Texture2D);
 
             Unbind();
+        }
+
+        internal OpenGLTexture2D(GL gl, uint texture)
+        {
+            _gl = gl;
+            _texture = texture;
         }
 
         internal uint GetHandle() => _texture;

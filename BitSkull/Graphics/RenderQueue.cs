@@ -22,6 +22,8 @@ namespace BitSkull.Graphics
             _isSorted = false;
         }
 
+        public void PushText(Text text) => PushRenderable(text.Renderable);
+
         public void SetCamera(Camera camera) => Camera = camera;
 
         internal void Sort()
