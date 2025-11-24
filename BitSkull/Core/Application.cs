@@ -67,11 +67,11 @@ namespace BitSkull.Core
                 out vec4 frag_Color;
 
                 uniform sampler2D u_FontTexture;
-                uniform vec4 u_Color;
+                uniform vec3 u_Color;
 
                 void main(){
                     float alpha = texture(u_FontTexture, v_UV).r;
-                    frag_Color = vec4(u_Color.rgb, alpha);
+                    frag_Color = vec4(u_Color, alpha);
                 }
                 """,
                 new BufferLayout(new("a_Pos", ShaderDataType.Float3), new("a_UV", ShaderDataType.Float2)),
@@ -81,7 +81,7 @@ namespace BitSkull.Core
             text.Transform.Rotation.Z = Maths.DegToRad(45f);
 
             text.Renderable.Material.SetTexture("u_FontTexture", font.FontTexture);
-            text.Renderable.Material.SetColor("u_Color", new Color4(1f, 1f, 1f));
+            text.Renderable.Material.SetColor("u_Color", new Color3(0.8f, 0.8f, 0.3f));
 
             cam = new Camera(CameraType.Orthographic);
 
@@ -128,6 +128,8 @@ namespace BitSkull.Core
                 mainQueue.PushText(text);
 
                 _renderer.EndFrame();
+
+                text.SetContent($"FPS: {MathF.Round(1/dt)}");
             }
 
             dtStopwatch.Stop();

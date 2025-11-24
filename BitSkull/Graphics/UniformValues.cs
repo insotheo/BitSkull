@@ -58,6 +58,16 @@ namespace BitSkull.Graphics
         public void SetValue(object value) => Value = (Vec3D)value;
     }
 
+    public class UniformColor3 : IUniformValue
+    {
+        public Color3 Value { get; set; }
+
+        public UniformColor3(Color3 value) => Value = value;
+
+        public void Apply(Shader shader, string uniformName) => shader.SetUniform(uniformName, Value);
+        public void SetValue(object value) => Value = (Color3)value;
+    }
+
     public class UniformColor4 : IUniformValue
     {
         public Color4 Value { get; set; }

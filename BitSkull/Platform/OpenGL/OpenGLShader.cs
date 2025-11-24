@@ -119,6 +119,12 @@ namespace BitSkull.Platform.OpenGL
             if (loc == -1) return;
             _gl.Uniform3(GetUniform(name), value.X, value.Y, value.Z);
         }
+        public override void SetUniform(string name, Color3 value)
+        {
+            int loc = GetUniform(name);
+            if (loc == -1) return;
+            _gl.Uniform3(loc, value.R, value.G, value.B);
+        }
         public override void SetUniform(string name, Color4 value)
         {
             int loc = GetUniform(name);

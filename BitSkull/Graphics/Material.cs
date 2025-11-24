@@ -37,6 +37,7 @@ namespace BitSkull.Graphics
                     double => new UniformDouble((double)value),
                     Vec2D => new UniformVec2D((Vec2D)value),
                     Vec3D => new UniformVec3D((Vec3D)value),
+                    Color3 => new UniformColor3((Color3)value),
                     Color4 => new UniformColor4((Color4)value),
                     Matrix4x4 => new UniformMat4((Matrix4x4)value),
                     Texture2D => new UniformTexture2D((Texture2D)value),
@@ -53,6 +54,7 @@ namespace BitSkull.Graphics
         public void SetReal(string name, double value) => SetUniform(name, value);
         public void SetVec2D(string name, Vec2D value) => SetUniform(name, value);
         public void SetVec3D(string name, Vec3D value) => SetUniform(name, value);
+        public void SetColor(string name, Color3 value) => SetUniform(name, value);
         public void SetColor(string name, Color4 value) => SetUniform(name, value);
         public void SetMat4(string name, Matrix4x4 value) => SetUniform(name, value);
 
