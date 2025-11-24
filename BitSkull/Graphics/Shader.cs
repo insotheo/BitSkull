@@ -10,9 +10,11 @@ namespace BitSkull.Graphics
         public int ID { get; private set; }
 
         public bool IsValid { get; protected set; } = false;
-        public VertexShaderInfo VertexShaderInfo { get; private set; }
 
-        protected Shader(VertexShaderInfo vertexShaderInfo)
+        public VertexShaderInfo VertexShaderInfo { get; private set; }
+        public BufferLayout Layout { get; private set; }
+
+        protected Shader(BufferLayout layout, VertexShaderInfo vertexShaderInfo)
         {
             ID = _nextID++;
 
@@ -20,8 +22,9 @@ namespace BitSkull.Graphics
                 String.IsNullOrEmpty(vertexShaderInfo.ViewUniformName) ||
                 String.IsNullOrEmpty(vertexShaderInfo.ProjectionUniformName))
                 throw new ArgumentException("VertexShaderInfo contains null or empty uniform names");
-            VertexShaderInfo = vertexShaderInfo;
 
+            VertexShaderInfo = vertexShaderInfo;
+            Layout = layout;
         }
         protected abstract void ApplyShaderInfo();
 

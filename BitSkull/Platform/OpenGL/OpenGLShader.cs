@@ -15,8 +15,8 @@ namespace BitSkull.Platform.OpenGL
 
         private readonly GL _gl;
 
-        internal OpenGLShader(GL gl, string vertexSrc, string fragmentSrc, VertexShaderInfo vertexShaderInfo)
-            : base(vertexShaderInfo)
+        internal OpenGLShader(GL gl, string vertexSrc, string fragmentSrc, BufferLayout layout, VertexShaderInfo vertexShaderInfo)
+            : base(layout, vertexShaderInfo)
         {
             _gl = gl;
 

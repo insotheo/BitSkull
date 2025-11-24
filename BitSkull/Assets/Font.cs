@@ -26,12 +26,12 @@ namespace BitSkull.Assets
 
         public byte[] Atlas { get; private set; }
         public stbtt_bakedchar[] Glyphs { get; private set; }
-        public Texture2D FontTexture { get; private set;  }
+        public Texture2D FontTexture { get; private set; }
 
         public Font(Stream fontStream, int pxHeight = 32)
         {
             byte[] fontData;
-            using(MemoryStream ms = new MemoryStream())
+            using (MemoryStream ms = new MemoryStream())
             {
                 fontStream.CopyTo(ms);
                 fontStream.Seek(0, SeekOrigin.Begin);
@@ -43,11 +43,11 @@ namespace BitSkull.Assets
 
             unsafe
             {
-                fixed(byte* font_p = fontData)
+                fixed (byte* font_p = fontData)
                 {
-                    fixed(byte* atlass_p = Atlas)
+                    fixed (byte* atlass_p = Atlas)
                     {
-                        fixed(stbtt_bakedchar* gliphs_p = Glyphs)
+                        fixed (stbtt_bakedchar* gliphs_p = Glyphs)
                         {
                             int res = stbtt_BakeFontBitmap(font_p, 0, pxHeight, atlass_p, AtlasSize, AtlasSize, FirstChar, CharCount, gliphs_p);
                             if (res <= 0)
@@ -108,7 +108,7 @@ namespace BitSkull.Assets
         public float MeasureText(string text)
         {
             float width = 0f;
-            foreach(char c in text)
+            foreach (char c in text)
             {
                 if (c < FirstChar || c >= FirstChar + CharCount)
                     continue;

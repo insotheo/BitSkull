@@ -18,9 +18,10 @@ namespace BitSkull.Graphics
             ID = _nextID++;
             _vertexBuffer = vbo;
             _indexBuffer = ibo;
-            if(IsValid)
+            if (IsValid)
                 _platformRenderable = renderer.Backend.CreatePlatformRenderable(vbo, ibo);
         }
+
 
         public void Dispose()
         {
@@ -29,17 +30,18 @@ namespace BitSkull.Graphics
             _platformRenderable?.Dispose();
         }
 
-        public void UsePlatform() => _platformRenderable?.Bind();
-        public uint GetIndexCount() => _indexBuffer != null ? _indexBuffer.GetCount() : 0;
-        public BufferLayout GetLayout() => _vertexBuffer?.GetLayot();
 
         public void Recreate(VertexBuffer vbo, IndexBuffer ibo, Renderer renderer)
         {
             Dispose();
             _vertexBuffer = vbo;
             _indexBuffer = ibo;
-            if(IsValid)
+            if (IsValid)
                 _platformRenderable = renderer.Backend.CreatePlatformRenderable(_vertexBuffer, _indexBuffer);
         }
+
+        public void UsePlatform() => _platformRenderable?.Bind();
+        public uint GetIndexCount() => _indexBuffer != null ? _indexBuffer.GetCount() : 0;
+        public BufferLayout GetLayout() => _vertexBuffer?.GetLayot();
     }
 }

@@ -1,5 +1,5 @@
 ﻿using BitSkull.Assets;
-using System;
+using BitSkull.Numerics;
 
 namespace BitSkull.Graphics
 {
@@ -7,21 +7,22 @@ namespace BitSkull.Graphics
     {
         public Renderable Renderable { get; private set; }
         private Renderer _renderer;
+        private Shader _shader;
         private bool _shaderVertexPositionHasZ;
-        private BufferLayout _layout;
 
         public Font Font { get; private set; }
+        public Transform3D Transform => Renderable.Transform;
+
         public string Content { get; private set; }
         private float _nativeScale;
 
-        public Text(Renderer renderer, BufferLayout layout, Renderable renderable, Font font, string content = "", float nativeScale = 5f, bool shaderVertexPositionHasZ = true)
+        internal Text(Renderer renderer, Shader shader, Font font, string content = "", float nativeScale = 5f, bool shaderVertexPositionHasZ = true)
         {
             _renderer = renderer;
-            _layout = layout;
             _shaderVertexPositionHasZ = shaderVertexPositionHasZ;
-            Renderable = renderable;
-            if (Renderable == null)
-                throw new ArgumentNullException("Renderable is null");
+            _shader = shader;
+
+            Renderable = new Renderable(_renderer.CreateMesh(null, null), new Material(_shader));
 
             Font = font;
             Content = content;
@@ -46,11 +47,11 @@ namespace BitSkull.Graphics
             var txtData = Font.GetTextGeometry(Content, _nativeScale);
             float[] vertices = new float[txtData.glypthVertices.Count * (_shaderVertexPositionHasZ ? 5 : 4)];
             int idx = 0;
-            foreach(GlypthVertex vertex in txtData.glypthVertices)
+            foreach (GlypthVertex vertex in txtData.glypthVertices)
             {
                 vertices[idx++] = vertex.Pos.X;
                 vertices[idx++] = vertex.Pos.Y;
-                if(_shaderVertexPositionHasZ)
+                if (_shaderVertexPositionHasZ)
                     vertices[idx++] = 0f;
 
                 vertices[idx++] = vertex.UV.X;
@@ -58,7 +59,7 @@ namespace BitSkull.Graphics
             }
 
             VertexBuffer vbo = _renderer.GenVertexBuffer(vertices);
-            vbo.SetLayout(_layout);
+            vbo.SetLayout(_shader.Layout);
             IndexBuffer ibo = _renderer.GenIndexBuffer(txtData.indices);
             Renderable.Mesh.Recreate(vbo, ibo, _renderer);
         }

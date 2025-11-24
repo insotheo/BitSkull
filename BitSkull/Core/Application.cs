@@ -4,7 +4,6 @@ using BitSkull.Graphics;
 using BitSkull.InputSystem;
 using BitSkull.Numerics;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -41,7 +40,6 @@ namespace BitSkull.Core
         {
             using (FileStream fs = File.OpenRead("Assets/Roboto.ttf"))
                 font = new Font(fs, 64);
-            _renderer.GenFontTexture(font);
 
             _renderer.CreateShader("textDefaultShader",
                 """
@@ -74,29 +72,18 @@ namespace BitSkull.Core
                 void main(){
                     float alpha = texture(u_FontTexture, v_UV).r;
                     frag_Color = vec4(u_Color.rgb, alpha);
-                    //frag_Color = vec4(u_Color.rgb, 1.0);
                 }
                 """,
+                new BufferLayout(new("a_Pos", ShaderDataType.Float3), new("a_UV", ShaderDataType.Float2)),
                 new VertexShaderInfo()
             );
-
-            Text text = new Text(_renderer, 
-                new BufferLayout(new BufferElement("a_Pos", ShaderDataType.Float3), new BufferElement("a_UV", ShaderDataType.Float2)), 
-                new Renderable(new Mesh(null, null, _renderer), new Material(_renderer.GetShader("textDefaultShader"))), 
-                font, 
-                content: $"Hello, {Environment.UserName}!",
-                nativeScale: 100f);
-            Color4 textColor = new Color4(1f, 1f, 1f);
+            Text text = _renderer.CreateText("Hello, World!", font, "textDefaultShader", nativeScale: 200f);
+            text.Transform.Rotation.Z = Maths.DegToRad(45f);
 
             text.Renderable.Material.SetTexture("u_FontTexture", font.FontTexture);
-            text.Renderable.Material.SetColor("u_Color", textColor);
-            text.Renderable.Transform.Rotation.Y = Maths.DegToRad(45f);
-            text.Renderable.Transform.Rotation.X = Maths.DegToRad(-30f);
-            int counter = 0;
+            text.Renderable.Material.SetColor("u_Color", new Color4(1f, 1f, 1f));
 
-            Log.Info("Hold [R] for magic");
-            cam = new Camera(CameraType.Perspective);
-            cam.Position.Z = 1.5f;
+            cam = new Camera(CameraType.Orthographic);
 
             IsRunning = true;
             if (_window != null)
@@ -126,17 +113,6 @@ namespace BitSkull.Core
                     cam.Position.Z += 2f * dt;
                 if (Input.IsKeyDown(KeyCode.X))
                     cam.Position.Z -= 2f * dt;
-
-                if (Input.IsKeyDown(KeyCode.R))
-                {
-                    counter += 1;
-                    textColor.R = (MathF.Sin(counter/10f * 0.8f) + 1f) * 0.5f;
-                    textColor.G = (MathF.Sin(counter/10f * 1.5f + 2f) + 1f) * 0.5f;
-                    textColor.B = (MathF.Sin(counter/10f * 1.1f + 4f) + 1f) * 0.5f;
-                    Log.Trace($"Score: {counter}");
-                    text.SetContent($"Score: {counter}");
-                    text.Renderable.Material.SetColor("u_Color", textColor);
-                }
 
                 if (_window != null)
                     _window.DoUpdate(dt);

@@ -63,14 +63,8 @@ namespace BitSkull.Graphics
 
         #region Textures
 
-        internal void SaveTextureReference(string name, Texture2D texture) => _textures.Add(name, texture);
-        internal void DisposeTexture(string name)
-        {
-            if (!_textures.ContainsKey(name)) return;
-            _textures[name].Dispose();
-            _textures.Remove(name);
-        }
-        internal void RemoveTextureReference(string name)
+        public void SaveTextureReference(string name, Texture2D texture) => _textures.Add(name, texture);
+        public void RemoveTextureReference(string name)
         {
             if (!_textures.ContainsKey(name)) return;
             _textures.Remove(name);

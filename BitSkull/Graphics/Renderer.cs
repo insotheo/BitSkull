@@ -47,7 +47,7 @@ namespace BitSkull.Graphics
         ////////////////////////////
 
         #region Mesh
-        
+
         public VertexBuffer GenVertexBuffer(float[] vertices)
         {
             if (Backend != null) return Backend.GenVertexBuffer(vertices);
@@ -94,10 +94,10 @@ namespace BitSkull.Graphics
         /// <summary>
         /// For OpenGL vertexShader and fragmentShader should be sources
         /// </summary>
-        public void CreateShader(string shaderName, string vertexShader, string fragmentShader, VertexShaderInfo vertexShaderInfo)
+        public void CreateShader(string shaderName, string vertexShader, string fragmentShader, BufferLayout layout, VertexShaderInfo vertexShaderInfo)
         {
             if (Backend == null) return;
-            Shader shader = Backend.GenShader(vertexShader, fragmentShader, vertexShaderInfo);
+            Shader shader = Backend.GenShader(vertexShader, fragmentShader, layout, vertexShaderInfo);
             if (!shader.IsValid) return;
             if (_shaders.ContainsKey(shaderName))
             {
@@ -110,8 +110,28 @@ namespace BitSkull.Graphics
 
         public Shader GetShader(string shaderName)
         {
-            if (!_initialized || !_shaders.ContainsKey(shaderName)) return null;
+            if (!_initialized) return null;
+            if (!_shaders.ContainsKey(shaderName))
+            {
+                Log.Error($"Shader '{shaderName}' not found!", "Shader Manager");
+                return null;
+            }
             return _shaders[shaderName];
+        }
+
+        #endregion
+
+        #region Abstractions
+
+        public Text CreateText(string content, Font font, string shaderName, float nativeScale = 5f, bool shaderVertexPositionHasZ = true)
+        {
+            if (Backend == null) return null;
+            if (font.FontTexture == null)
+                GenFontTexture(font);
+            Shader textShader = GetShader(shaderName);
+            if (textShader == null) return null;
+            Text text = new Text(this, textShader, font, content, nativeScale, shaderVertexPositionHasZ);
+            return text;
         }
 
         #endregion
@@ -121,7 +141,7 @@ namespace BitSkull.Graphics
 
         public void BeginFrame()
         {
-            if(!_initialized) return;
+            if (!_initialized) return;
             if (_frameActive)
             {
                 Log.Error("Frame is already activated", "Renderer");
@@ -146,7 +166,7 @@ namespace BitSkull.Graphics
 
         public void EndFrame()
         {
-            if(!_initialized) return;
+            if (!_initialized) return;
             if (!_frameActive)
             {
                 Log.Error("EndFrame called wihtout matching BeginFrame");
