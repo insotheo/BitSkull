@@ -77,16 +77,16 @@ namespace BitSkull.Graphics
         internal void Apply()
         {
             int texturesCount = 0;
-            foreach (string uniformName in _changedUniforms)
+            foreach (var u in _uniforms)
             {
-                if (_uniforms[uniformName] is UniformTexture2D uTexture)
+                if (u.Value is UniformTexture2D uTexture)
                 {
                     uTexture.Slot = texturesCount;
-                    uTexture.Apply(Shader, uniformName);
+                    uTexture.Apply(Shader, u.Key);
                     texturesCount += 1;
                 }
-                else
-                    _uniforms[uniformName].Apply(Shader, uniformName);
+                else if(_changedUniforms.Contains(u.Key))
+                    u.Value.Apply(Shader, u.Key);
             }
             _changedUniforms.Clear();
         }

@@ -37,7 +37,6 @@ namespace BitSkull.Platform.OpenGL
         {
             Matrix4x4 viewMatrix = queue.Camera != null ? queue.Camera.GetViewMatrix() : Matrix4x4.Identity;
             Matrix4x4 projectionMatrix = queue.Camera != null ? queue.Camera.GetProjectionMatrix() : Matrix4x4.Identity;
-            bool cameraInfoSet = false;
 
             Graphics.Shader prevShader = null;
             Material prevMat = null;
@@ -66,14 +65,10 @@ namespace BitSkull.Platform.OpenGL
                     prevMesh = r.Mesh;
                 }
 
-                if (!cameraInfoSet)
-                {
-                    prevShader.SetUniform(prevShader.VertexShaderInfo.ViewUniformName, viewMatrix);
-                    prevShader.SetUniform(prevShader.VertexShaderInfo.ProjectionUniformName, projectionMatrix);
-                    cameraInfoSet = true;
-                }
-
                 prevShader.SetUniform(prevShader.VertexShaderInfo.ModelUniformName, r.Transform.GetTransformMatrix());
+                prevShader.SetUniform(prevShader.VertexShaderInfo.ViewUniformName, viewMatrix);
+                prevShader.SetUniform(prevShader.VertexShaderInfo.ProjectionUniformName, projectionMatrix);
+
                 _gl.DrawElements(PrimitiveType.Triangles, r.Mesh.GetIndexCount(), DrawElementsType.UnsignedInt, null);
             }
 

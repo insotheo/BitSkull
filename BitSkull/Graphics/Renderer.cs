@@ -164,7 +164,7 @@ namespace BitSkull.Graphics
             return queue;
         }
 
-        public void EndFrame()
+        public void EndFrame(Camera mainCam = null)
         {
             if (!_initialized) return;
             if (!_frameActive)
@@ -174,8 +174,13 @@ namespace BitSkull.Graphics
             }
             if (_queues.Count > 0)
             {
-                Color4 clearColor = _queues[0].Camera == null ? new Color4(0.15f, 0.15f, 0.15f) : _queues[0].Camera.ClearColor;
-                Clear(clearColor.R, clearColor.G, clearColor.B, 1f); //TODO: take data from the first camera
+                Color4 clearColor;
+                if (mainCam == null)
+                    clearColor = _queues[0].Camera == null ? new Color4(0.15f, 0.15f, 0.15f) : _queues[0].Camera.ClearColor;
+                else 
+                    clearColor = mainCam.ClearColor;
+                Clear(clearColor.R, clearColor.G, clearColor.B, 1f);
+
                 foreach (RenderQueue queue in _queues)
                 {
                     queue.Sort();
